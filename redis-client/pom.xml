@@ -7,11 +7,11 @@
         <version>0.0.1</version>
     </parent>
 
-    <artifactId>redis-server</artifactId>
+    <artifactId>redis-client</artifactId>
     <packaging>jar</packaging>
 
-    <description>redis server/服务端</description>
-    <name>redis-server</name>
+    <name>redis-client</name>
+    <description>redis-client/客户端</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

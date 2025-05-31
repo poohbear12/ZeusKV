@@ -31,4 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
-/redis-server/src/test/
+/logs
+/record.md
+**/test
