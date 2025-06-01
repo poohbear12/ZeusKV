@@ -1,0 +1,52 @@
+package com.cc.utils;
+
+import com.cc.enmu.CMDExceptionEnum;
+import com.cc.exception.CMDException;
+import com.cc.protocal.resp.*;
+import io.netty.buffer.ByteBuf;
+
+/**
+ * @program: cc-simple-redis
+ * @description: Resp工具类
+ * @author: ccstar
+ * @create: 2025-06-01  12:41
+ **/
+
+public class RespUtils {
+
+    // todo 粘包待解决
+    public static Resp decodeU(ByteBuf buffer){
+        if(buffer.readableBytes() <= 0){
+            throw new CMDException(CMDExceptionEnum.shortError);
+        }
+        return handlerBytes(buffer);
+    }
+    /**
+     * 5种类型消息
+     * 1. +: simple Strings "+OK\r\n"
+     * 2. -: Errors "-Error message\r\n"
+     * 3. :: Integer :0\r\n
+     * 4. $:Bulk Strings "$6\r\nfoobar\r\n"
+     * 5. *: Arrays "*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n"
+     **/
+    private static Resp handlerBytes(ByteBuf buffer) {
+        char flag = (char)buffer.readByte();
+        switch (flag){
+            case '+':
+                return new RSimpleStrings().decode(buffer);
+            case '-':
+                return new RErrors().decode(buffer);
+            case ':':
+                return new RInteger().decode(buffer);
+            case '$':
+                return new RBulkStrings().decode(buffer);
+            case '*':
+                return new RArrays().decode(buffer);
+            default:
+                buffer.clear();
+                throw new CMDException(CMDExceptionEnum.typeError);
+        }
+    }
+
+
+}

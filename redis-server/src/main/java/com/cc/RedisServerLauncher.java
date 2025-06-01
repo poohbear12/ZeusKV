@@ -1,6 +1,7 @@
 package com.cc;
 
-import lombok.extern.slf4j.Slf4j;
+import com.cc.server.KVServer;
+import com.cc.server.redis.RedisServer;
 
 /**
  * @program: cc-simple-redis
@@ -8,10 +9,11 @@ import lombok.extern.slf4j.Slf4j;
  * @author: ccstar
  * @create: 2025-05-31  21:05
  **/
-@Slf4j
 public class RedisServerLauncher
 {
     public static void main(String[] args) {
-      log.info("Redis server start!");
+        // 监听所有访问本机端口6379连接
+        KVServer redisServer = new RedisServer("0.0.0.0",6379);
+        redisServer.start();
     }
 }
