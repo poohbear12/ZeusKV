@@ -4,10 +4,7 @@ package com.cc.handler;
 import com.cc.command.Command;
 import com.cc.core.RedisCoreImpl;
 import com.cc.enmu.CMDTypeEnum;
-import com.cc.protocal.resp.RArrays;
-import com.cc.protocal.resp.RBulkStrings;
-import com.cc.protocal.resp.RSimpleStrings;
-import com.cc.protocal.resp.Resp;
+import com.cc.protocal.resp.*;
 import com.cc.server.redis.ChannelHolder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -36,12 +33,19 @@ public class RespCommandHandler extends SimpleChannelInboundHandler<Resp> {
             Resp[] content = array.getContent();
             String commandName = new String(((RBulkStrings)content[0]).getContent());
             commandName = commandName.toUpperCase();
-            CMDTypeEnum commandType = CMDTypeEnum.valueOf(commandName);
-            System.out.println(commandName);
-            Command apply = commandType.getSupplier().apply(new RedisCoreImpl());
-            Resp handle = apply.handle();
-            ctx.channel().writeAndFlush(handle);
-        }
+                CMDTypeEnum cmdTypeEnum = null;
+                try{
+                    cmdTypeEnum = CMDTypeEnum.valueOf(commandName);
+                }catch (IllegalArgumentException e){
+                    ctx.channel().writeAndFlush(new RErrors("命令不存在!"));
+                }
+                if (cmdTypeEnum != null) {
+                    Command apply = cmdTypeEnum.getSupplier().apply(new RedisCoreImpl());
+                    ctx.channel().writeAndFlush(apply.handle());
+                }
+            }
+
+
     }
 
     /**
@@ -51,7 +55,6 @@ public class RespCommandHandler extends SimpleChannelInboundHandler<Resp> {
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        ctx.channel().writeAndFlush(new RSimpleStrings("Redis server connection successful!\r\n" + "Redis server IP:" + ctx.channel().localAddress().toString() + "\r\n"));
         ChannelHolder.setChannel(ctx.channel().remoteAddress().toString(),ctx.channel());
     }
 
