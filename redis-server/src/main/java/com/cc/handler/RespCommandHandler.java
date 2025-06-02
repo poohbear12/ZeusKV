@@ -28,22 +28,22 @@ public class RespCommandHandler extends SimpleChannelInboundHandler<Resp> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Resp msg) throws Exception {
         // todo 逻辑待优化
+        // 1. 通过解析命令名称来获取枚举类 -> 通过枚举类方法获取到命令实体 -> 执行命令方法 -> 获取到返回值
+        // 2. 逻辑部分还可以优化
         if (msg instanceof RArrays) {
             RArrays array = (RArrays) msg;
             Resp[] content = array.getContent();
-            String commandName = new String(((RBulkStrings)content[0]).getContent());
-            commandName = commandName.toUpperCase();
-                CMDTypeEnum cmdTypeEnum = null;
-                try{
-                    cmdTypeEnum = CMDTypeEnum.valueOf(commandName);
-                }catch (IllegalArgumentException e){
-                    ctx.channel().writeAndFlush(new RErrors("命令不存在!"));
-                }
-                if (cmdTypeEnum != null) {
-                    Command apply = cmdTypeEnum.getSupplier().apply(new RedisCoreImpl());
-                    ctx.channel().writeAndFlush(apply.handle());
-                }
+            String commandName = new String(((RBulkStrings) content[0]).getContent()).toUpperCase();
+            try {
+                CMDTypeEnum cmdTypeEnum = CMDTypeEnum.valueOf(commandName);
+                Command cmd = cmdTypeEnum.getSupplier().apply(new RedisCoreImpl());
+                Resp handle = cmd.handle();
+                ctx.channel().writeAndFlush(handle);
+            } catch (IllegalArgumentException e) {
+                ctx.channel().writeAndFlush(new RErrors("命令不存在!"));
             }
+
+        }
 
 
     }
