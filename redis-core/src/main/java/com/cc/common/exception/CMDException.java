@@ -1,6 +1,6 @@
-package com.cc.exception;
+package com.cc.common.exception;
 
-import com.cc.enmu.CMDExceptionEnum;
+import com.cc.common.enmu.CMDExceptionEnum;
 
 /**
  * @program: cc-simple-redis

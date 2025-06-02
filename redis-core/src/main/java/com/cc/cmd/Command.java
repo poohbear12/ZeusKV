@@ -1,7 +1,7 @@
-package com.cc.command;
+package com.cc.cmd;
 
 
-import com.cc.enmu.CMDTypeEnum;
+import com.cc.common.enmu.CMDTypeEnum;
 import com.cc.protocal.resp.Resp;
 
 public interface Command {

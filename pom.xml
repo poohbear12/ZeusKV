@@ -13,12 +13,14 @@
 
     <description>简易版Redis by Java</description>
     <modules>
+        <module>redis-core</module>
         <module>redis-server</module>
         <module>redis-client</module>
-        <module>redis-core</module>
     </modules>
 
     <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <java.version>21</java.version>
         <project.cc.version>0.0.1</project.cc.version>
     </properties>

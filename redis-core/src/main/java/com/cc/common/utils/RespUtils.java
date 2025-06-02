@@ -1,7 +1,8 @@
-package com.cc.utils;
+package com.cc.common.utils;
 
-import com.cc.enmu.CMDExceptionEnum;
-import com.cc.exception.CMDException;
+
+import com.cc.common.enmu.CMDExceptionEnum;
+import com.cc.common.exception.CMDException;
 import com.cc.protocal.resp.*;
 import io.netty.buffer.ByteBuf;
 

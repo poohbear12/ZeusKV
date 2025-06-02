@@ -1,6 +1,6 @@
 package com.cc.server.redis;
 
-import com.cc.handler.RespCommandHandler;
+import com.cc.handler.RespCMDHandler;
 import com.cc.handler.RespDecoder;
 import com.cc.handler.RespEncoder;
 import io.netty.channel.ChannelPipeline;
@@ -23,7 +23,7 @@ public class RedisChannelInitializer extends ChannelInitializer<SocketChannel> {
     protected void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast(new RespDecoder());
-        pipeline.addLast(new RespCommandHandler());
+        pipeline.addLast(new RespCMDHandler());
         pipeline.addLast(new RespEncoder());
 //        pipeline.addLast(new IdleStateHandler(60, 30, 0, TimeUnit.SECONDS));
 

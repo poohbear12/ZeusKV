@@ -1,10 +1,15 @@
 package com.cc.handler;
 
+import com.cc.cmd.Command;
 
-import com.cc.command.Command;
-import com.cc.core.RedisCoreImpl;
-import com.cc.enmu.CMDTypeEnum;
-import com.cc.protocal.resp.*;
+
+import com.cc.common.enmu.CMDTypeEnum;
+import com.cc.database.core.RedisCore;
+import com.cc.database.core.RedisCoreImpl;
+import com.cc.protocal.resp.RArrays;
+import com.cc.protocal.resp.RBulkStrings;
+import com.cc.protocal.resp.RErrors;
+import com.cc.protocal.resp.Resp;
 import com.cc.server.redis.ChannelHolder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -17,8 +22,8 @@ import lombok.extern.slf4j.Slf4j;
  * @create: 2025-06-01  08:22
  **/
 @Slf4j
-public class RespCommandHandler extends SimpleChannelInboundHandler<Resp> {
-
+public class RespCMDHandler extends SimpleChannelInboundHandler<Resp> {
+    private final RedisCore redisCore = new RedisCoreImpl();
     /**
      * 处理指令
      * @param ctx
@@ -36,7 +41,8 @@ public class RespCommandHandler extends SimpleChannelInboundHandler<Resp> {
             String commandName = new String(((RBulkStrings) content[0]).getContent()).toUpperCase();
             try {
                 CMDTypeEnum cmdTypeEnum = CMDTypeEnum.valueOf(commandName);
-                Command cmd = cmdTypeEnum.getSupplier().apply(new RedisCoreImpl());
+                Command cmd = cmdTypeEnum.getSupplier().apply(redisCore);
+                cmd.setContext(content);
                 Resp handle = cmd.handle();
                 ctx.channel().writeAndFlush(handle);
             } catch (IllegalArgumentException e) {
@@ -44,7 +50,6 @@ public class RespCommandHandler extends SimpleChannelInboundHandler<Resp> {
             }
 
         }
-
 
     }
 

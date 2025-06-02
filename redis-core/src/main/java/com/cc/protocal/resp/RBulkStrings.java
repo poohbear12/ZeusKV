@@ -4,6 +4,8 @@ package com.cc.protocal.resp;
 import io.netty.buffer.ByteBuf;
 import lombok.Data;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * @program: cc-simple-redis
  * @description: BulkString 多字符串
@@ -55,5 +57,9 @@ public class RBulkStrings extends AbstracResp {
                 buffer.writeBytes(CRLF);
             }
         }
+    }
+
+    public String getString(){
+        return new String(content, StandardCharsets.UTF_8);
     }
 }

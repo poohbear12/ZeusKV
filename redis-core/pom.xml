@@ -9,9 +9,8 @@
 
     <artifactId>redis-core</artifactId>
     <packaging>jar</packaging>
-
-    <name>redis-common</name>
-    <description>redis-common/通用模块</description>
+    <name>redis-core</name>
+    <description>redis-core/核心模块</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

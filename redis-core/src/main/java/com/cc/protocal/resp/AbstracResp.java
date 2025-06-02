@@ -1,7 +1,7 @@
 package com.cc.protocal.resp;
 
-import com.cc.enmu.CMDExceptionEnum;
-import com.cc.exception.CMDException;
+import com.cc.common.enmu.CMDExceptionEnum;
+import com.cc.common.exception.CMDException;
 import io.netty.buffer.ByteBuf;
 import lombok.extern.slf4j.Slf4j;
 

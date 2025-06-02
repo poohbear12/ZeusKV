@@ -1,4 +1,4 @@
-package com.cc.enmu;
+package com.cc.common.enmu;
 
 /**
  * @program: cc-simple-redis
