@@ -15,7 +15,7 @@
     <modules>
         <module>redis-server</module>
         <module>redis-client</module>
-        <module>redis-common</module>
+        <module>redis-core</module>
     </modules>
 
     <properties>

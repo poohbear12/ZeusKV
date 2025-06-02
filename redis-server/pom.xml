@@ -22,7 +22,7 @@
         <!-- redis-common依赖 -->
         <dependency>
             <groupId>com.cc</groupId>
-            <artifactId>redis-common</artifactId>
+            <artifactId>redis-core</artifactId>
             <version>${project.cc.version}</version>
         </dependency>
     </dependencies>
