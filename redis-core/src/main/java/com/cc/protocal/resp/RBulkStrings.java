@@ -17,7 +17,9 @@ import java.nio.charset.StandardCharsets;
 public class RBulkStrings extends AbstracResp {
 
     private static final byte[] NULL_BYTES = "-1\r\n".getBytes();
+
     private static final byte[] EMPTY_BYTES = "0\r\n\r\n".getBytes();
+
     private byte[] content;
     
     @Override

@@ -12,10 +12,10 @@ public interface Command {
     CMDTypeEnum getCommand();
 
     /**
-     * 设置命令执行内容
-     * @param array
+     * 命令内容
+     * @param content
      */
-    void setContext(Resp[] array);
+    Command setContext(Resp[] content);
 
     /**
      * 执行命令

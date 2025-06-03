@@ -2,11 +2,12 @@ package com.cc.common.enmu;
 
 import com.cc.cmd.Command;
 import com.cc.cmd.Ping;
+import com.cc.cmd.list.Lpop;
 import com.cc.cmd.string.Get;
 import com.cc.cmd.string.Set;
+import com.cc.cmd.list.Lpush;
 import com.cc.database.core.RedisCore;
 import lombok.Getter;
-
 import java.util.function.Function;
 
 /**
@@ -18,11 +19,16 @@ import java.util.function.Function;
 @Getter
 public enum CMDTypeEnum {
 
-    PING(core -> new Ping()),
+    PING(Ping::new),
 
     SET(Set::new),
 
-    GET(Get::new);
+    GET(Get::new),
+
+    LPUSH(Lpush::new),
+
+    LPOP(Lpop::new)
+    ;
 
     private final Function<RedisCore, Command> supplier;
 

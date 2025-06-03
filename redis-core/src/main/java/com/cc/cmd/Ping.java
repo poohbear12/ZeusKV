@@ -1,6 +1,7 @@
 package com.cc.cmd;
 
 import com.cc.common.enmu.CMDTypeEnum;
+import com.cc.database.core.RedisCore;
 import com.cc.protocal.resp.RSimpleStrings;
 import com.cc.protocal.resp.Resp;
 
@@ -12,16 +13,15 @@ import com.cc.protocal.resp.Resp;
  **/
 
 
-public class Ping implements Command{
+public class Ping extends AbstractCommand{
+
+    public Ping(RedisCore redisCore) {
+        super(redisCore);
+    }
 
     @Override
     public CMDTypeEnum getCommand() {
         return CMDTypeEnum.PING;
-    }
-
-    @Override
-    public void setContext(Resp[] array) {
-
     }
 
     @Override

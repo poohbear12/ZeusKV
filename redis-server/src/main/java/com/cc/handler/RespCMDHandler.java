@@ -11,8 +11,10 @@ import com.cc.protocal.resp.RBulkStrings;
 import com.cc.protocal.resp.RErrors;
 import com.cc.protocal.resp.Resp;
 import com.cc.server.redis.ChannelHolder;
+import com.cc.server.redis.RedisServer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -22,8 +24,10 @@ import lombok.extern.slf4j.Slf4j;
  * @create: 2025-06-01  08:22
  **/
 @Slf4j
+@AllArgsConstructor
 public class RespCMDHandler extends SimpleChannelInboundHandler<Resp> {
-    private final RedisCore redisCore = new RedisCoreImpl();
+
+    private final RedisCore redisCore;
     /**
      * 处理指令
      * @param ctx
@@ -34,21 +38,16 @@ public class RespCMDHandler extends SimpleChannelInboundHandler<Resp> {
     protected void channelRead0(ChannelHandlerContext ctx, Resp msg) throws Exception {
         // todo 逻辑待优化
         // 1. 通过解析命令名称来获取枚举类 -> 通过枚举类方法获取到命令实体 -> 执行命令方法 -> 获取到返回值
-        // 2. 逻辑部分还可以优化
         if (msg instanceof RArrays) {
-            RArrays array = (RArrays) msg;
-            Resp[] content = array.getContent();
-            String commandName = new String(((RBulkStrings) content[0]).getContent()).toUpperCase();
+            Resp[] resps = ((RArrays) msg).getContent(); // 1. set 2. key 3. value...
+            String commandName = new String(((RBulkStrings) resps[0]).getContent()).toUpperCase();
             try {
                 CMDTypeEnum cmdTypeEnum = CMDTypeEnum.valueOf(commandName);
-                Command cmd = cmdTypeEnum.getSupplier().apply(redisCore);
-                cmd.setContext(content);
-                Resp handle = cmd.handle();
-                ctx.channel().writeAndFlush(handle);
+                Command cmd = cmdTypeEnum.getSupplier().apply(redisCore).setContext(resps);
+                ctx.channel().writeAndFlush(cmd.handle());
             } catch (IllegalArgumentException e) {
                 ctx.channel().writeAndFlush(new RErrors("命令不存在!"));
             }
-
         }
 
     }

@@ -1,5 +1,7 @@
 package com.cc.server.redis;
 
+import com.cc.database.core.RedisCore;
+import com.cc.database.core.RedisCoreImpl;
 import com.cc.server.AbstractKVServer;
 import com.cc.server.KVServer;
 import io.netty.bootstrap.ServerBootstrap;
@@ -23,14 +25,15 @@ public class RedisServer extends AbstractKVServer {
 
     private String host;
     private int port;
-
+    private final RedisCore redisCore;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private Channel serverChannel;
 
-    public RedisServer(String host, int port) {
+    public RedisServer(String host, int port, RedisCore redisCore) {
         this.host = host;
         this.port = port;
+        this.redisCore = redisCore;
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup(1);
     }
@@ -42,7 +45,7 @@ public class RedisServer extends AbstractKVServer {
             serverBootstrap.group(bossGroup,workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .option(ChannelOption.SO_BACKLOG, 128)
-                    .childHandler(new RedisChannelInitializer());
+                    .childHandler(new RedisChannelInitializer(this.redisCore));
             serverChannel = serverBootstrap.bind(host, port).sync().channel();
             log.info("Redis server started on port {}", port);
             serverChannel.closeFuture().sync();

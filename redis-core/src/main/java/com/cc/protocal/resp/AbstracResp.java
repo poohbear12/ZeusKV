@@ -49,8 +49,8 @@ public abstract class AbstracResp implements Resp{
 
 
     protected abstract Resp absDecode(ByteBuf buffer);
-    protected abstract void absEncode(ByteBuf buffer);
 
+    protected abstract void absEncode(ByteBuf buffer);
 
     /**
      * 从buffer中读取String

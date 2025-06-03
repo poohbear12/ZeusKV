@@ -1,0 +1,12 @@
+package com.cc.cmd.string;
+
+/**
+ * @program: cc-simple-redis
+ * @description:
+ * @author: ccstar
+ * @create: 2025-06-03  19:06
+ **/
+
+
+public class Mget {
+}
