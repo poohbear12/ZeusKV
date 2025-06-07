@@ -15,6 +15,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * @program: cc-simple-redis
@@ -26,20 +27,55 @@ import java.io.FileNotFoundException;
 @Slf4j
 public class RedisServer extends AbstractKVServer {
 
+    /**
+     * 主机地址
+     */
     private String host;
+
+    /**
+     * 端口号
+     */
     private int port;
+
+    /**
+     * Redis存储核心
+     */
     private final RedisCore redisCore;
+
+    /**
+     * 任务派发线程
+     */
     private EventLoopGroup bossGroup;
+
+    /**
+     * 任务处理线程
+     */
     private EventLoopGroup workerGroup;
+
+
     private Channel serverChannel;
+
+    /**
+     * AOF管理器
+     */
     private AOFManager aofManager;
-    public RedisServer(String host, int port, RedisCore redisCore) throws FileNotFoundException {
+
+    /**
+     * 刷盘间隔 1000 MS
+     */
+    private int flushInterval = 1000;
+
+    private boolean EnableAOF = true;
+
+    public RedisServer(String host, int port, RedisCore redisCore) throws IOException {
         this.host = host;
         this.port = port;
         this.redisCore = redisCore;
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup(1);
-        this.aofManager = new AOFManager("redis.aof");
+        if (EnableAOF) {
+            this.aofManager = new AOFManager("redis.aof",flushInterval);
+        }
     }
 
     @Override

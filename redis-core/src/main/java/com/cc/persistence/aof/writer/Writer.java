@@ -1,7 +1,8 @@
 package com.cc.persistence.aof.writer;
 
+import io.netty.buffer.ByteBuf;
+
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
  * @program: cc-simple-redis
@@ -11,12 +12,14 @@ import java.nio.ByteBuffer;
  **/
 
 public interface Writer {
+
     /**
-     * 将buffer中的数据写入到缓冲区
+     * 写入内核缓冲区
      * @param buffer
      * @return
+     * @throws IOException
      */
-    int write(ByteBuffer buffer);
+    int write(ByteBuf buffer) throws IOException;
 
     /**
      * 刷盘

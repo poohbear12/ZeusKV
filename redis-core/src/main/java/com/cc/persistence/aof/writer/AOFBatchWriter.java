@@ -1,195 +1,279 @@
 package com.cc.persistence.aof.writer;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
+import io.netty.buffer.Unpooled;
 import lombok.extern.slf4j.Slf4j;
-
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+
 /**
  * @program: cc-simple-redis
- * @description: 批量写入实现类
+ * @description: 批量写入实现类 / 多重任务
  * @author: ccstar
  * @create: 2025-06-07  14:31
  **/
 
 @Slf4j
-public class AOFBatchWriter {
-
-    private final Writer writer;
+public class AOFBatchWriter implements Writer{
 
     /**
-     * 异步刷盘
+     * 文件写入器
      */
-    private final ScheduledExecutorService flushScheduler;
-    private final AtomicBoolean forceFlush = new AtomicBoolean(false);
-    private final int flushInterval;
+    private final Writer aofWriter;
 
     /**
-     * 队列
+     * 刷盘时间
      */
-    private static final int DEFAULT_QUEUE_SIZE = 1000;
-    private final BlockingDeque<ByteBuf> writeQueue;
-    private final Thread writeThread;
-    private final AtomicBoolean running = new AtomicBoolean(true);
+    private int flushInterval;
 
     /**
-     * 背压阈值
+     * 刷盘线程池
      */
-    private static final int DEFAULT_BACKPRESSURE_THRESHOLD = 6 * 1024 * 1024;
-    private final AtomicInteger pendingBytes = new AtomicInteger(0);
+    private ScheduledThreadPoolExecutor flushThread;
 
     /**
-     * 批处理参数
+     * write线程
      */
-    public static final int MIN_BATCH_SIZE = 16;
-    public static final int MAX_BATCH_SIZE = 50;
-
-    public static final int MIN_BATCH_TIMEOUT_MS = 2;
-    public static final int MAX_BATCH_TIMEOUT_MS = 10;
+    private Thread writeThread;
 
     /**
-     * big key最大阈值
+     * write线程是否启动
      */
-    private static final int LARGE_COMMAND_THRESHOLD = 512 * 1024;
+    private AtomicBoolean running;
 
-    public AOFBatchWriter(Writer fileWriter, int flushInterval) {
-        this.writer = fileWriter;
+    /**
+     * 阻塞队列
+     */
+    private BlockingDeque<ByteBuf> writeQueue;
+
+    /**
+     * 阻塞队列长度
+     */
+    private final int DEFAULT_QUEUE_SIZE;
+
+    /**
+     * Batch化处理参数设置
+     */
+    private int MIN_BATCH_SIZE;
+
+    private int MAX_BATCH_SIZE;
+
+    private int MIN_BATCH_TIMEOUT_MS;
+
+    private int MAX_BATCH_TIMEOUT_MS;
+
+    /**
+     * big key大小
+     */
+    private int LAGER_CMD_THRESHOLD;
+
+    /**
+     * 背压参数
+     */
+    private int DEFAULT_BACKPRESSURE_THRESHOLD;
+
+    private static final AtomicInteger pendingBytes = new AtomicInteger(0);
+
+    /**
+     * 是否强制刷盘
+     */
+    private static final AtomicBoolean forceFlush = new AtomicBoolean(false);
+
+
+
+    public AOFBatchWriter(Writer aofWriter, int flushInterval) {
+        this(aofWriter,flushInterval,1000,
+                16,
+                50,
+                2,
+                10,
+                512 * 1024,
+                6*1024*1024
+               );
+    }
+
+    public AOFBatchWriter(Writer aofWriter, int flushInterval,
+                          int DEFAULT_QUEUE_SIZE,
+                          int minBatchSize,
+                          int maxBatchSize,
+                          int minBatchTimeoutMs,
+                          int maxBatchTimeoutMs,
+                          int LAGER_CMD_THRESHOLD,
+                          int DEFAULT_BACKPRESSURE_THRESHOLD) {
+        this.DEFAULT_QUEUE_SIZE = DEFAULT_QUEUE_SIZE;
+        this.aofWriter = aofWriter;
         this.flushInterval = flushInterval;
-
-        this.writeQueue = new LinkedBlockingDeque<>(DEFAULT_QUEUE_SIZE);
-        this.writeThread = new Thread(this::processWriteQueue);
-        this.writeThread.setName("AOF-Writer-Thread");
-        this.writeThread.setDaemon(true);
-        this.writeThread.start();
-        this.flushScheduler= new ScheduledThreadPoolExecutor(1, r -> {
-            Thread thread = new Thread(r);
-            thread.setName("AOF-Flush-Thread");
-            thread.setDaemon(true);
-            return thread;
-        });
+        this.MIN_BATCH_SIZE = minBatchSize;
+        this.MAX_BATCH_SIZE = maxBatchSize;
+        this.MIN_BATCH_TIMEOUT_MS = minBatchTimeoutMs;
+        this.MAX_BATCH_TIMEOUT_MS = maxBatchTimeoutMs;
+        this.LAGER_CMD_THRESHOLD = LAGER_CMD_THRESHOLD;
+        this.DEFAULT_BACKPRESSURE_THRESHOLD = DEFAULT_BACKPRESSURE_THRESHOLD;
+        // 工作线程
+        startWrite();
+        // 刷盘线程
         startFlush();
     }
 
     /**
-     * 启动定时刷盘
+     * 启动写入
      */
-    private void startFlush() {
-        if (flushInterval > 0) {
-            this.flushScheduler.scheduleAtFixedRate(() -> {
-                try{
-                    if(forceFlush.compareAndSet(true, false)){
-                        writer.flush();
-                    }
-                }catch(Exception e){
-                    log.error("Failed to flush AOF file", e);
-                }
-            },flushInterval, flushInterval, java.util.concurrent.TimeUnit.MILLISECONDS);
-        }
+    private void startWrite() {
+        this.running = new AtomicBoolean(true);
+        this.writeQueue = new LinkedBlockingDeque<ByteBuf>(DEFAULT_QUEUE_SIZE);
+        this.writeThread = new Thread(this::handlerWrite);
+        this.writeThread.setName("AOF-WRITE-Thread");
+        this.writeThread.setDaemon(true);
+        this.writeThread.start();
     }
 
     /**
-     * 将阻塞队列中的命令写入内核缓冲区
+     * 启动刷盘
      */
-    public void processWriteQueue(){
+    private void startFlush() {
+        this.flushThread = new ScheduledThreadPoolExecutor(1, t -> {
+            Thread thread = new Thread(t);
+            thread.setName("AOF-FLUSH-Thread");
+            thread.setDaemon(true);
+            return thread;
+        });
+        if (flushInterval > 0) {
+            this.flushThread.scheduleAtFixedRate(() -> {
+                try {
+                    if (forceFlush.compareAndSet(true, false)) {
+                        aofWriter.flush();
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to flush AOF file",e);
+                }
+            }, flushInterval, flushInterval, TimeUnit.MILLISECONDS);
+        }
+    }
+
+
+    /**
+     * 处理写入
+     */
+    private void handlerWrite()  {
+        int currentSize = 0;
         ByteBuf[] batch = new ByteBuf[MAX_BATCH_SIZE];
-        int batchSize = 0;
-        while(running.get() || !writeQueue.isEmpty()){
-            try{
-                int currentBatchSize = calculateBatchSize(batchSize);
-                long timeout = calculateTimeout(currentBatchSize);
-
-                long deadline = System.currentTimeMillis() + timeout;
-
-                while(batchSize < currentBatchSize && System.currentTimeMillis() < deadline){
-                    ByteBuf item = writeQueue.poll(Math.max(1,  deadline - System.currentTimeMillis()),
-                            TimeUnit.MILLISECONDS);
-                    if(item != null){
-                        batch[batchSize++] = item;
-                    }else if(batchSize == 0){
-                        Thread.yield();
-                    }else{
+        while (running.get() || !writeQueue.isEmpty()) {
+            try {
+                // 计算批次
+                // 计算时间
+                int batchSize = calculateBatchSize();
+                long deadline = System.currentTimeMillis() + calculateTimeout();
+                while (currentSize < batchSize && System.currentTimeMillis() < deadline) {
+                    ByteBuf item = writeQueue.poll(Math.max(1, deadline - System.currentTimeMillis()), TimeUnit.MILLISECONDS);
+                    // todo 这里写入需要考虑好时间
+                    if (item != null) {
+                        batch[currentSize++] = item;
+                    } else {
                         break;
                     }
                 }
-                if(batchSize > 0){
-                    writeBatch(batch, batchSize);
-                    for(int i = 0; i < batchSize; i++){
-                        pendingBytes.addAndGet(-batch[i].readableBytes());
+                if (currentSize > 0) {
+                    writeBatch(batch, currentSize);
+                    for (int i = 0; i < currentSize; i++) {
                         batch[i].release();
                         batch[i] = null;
                     }
-                    batchSize = 0;
+                    currentSize = 0;
                 }
-            } catch(InterruptedException e) {
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
-            } catch (Exception e){
-                log.error("Failed to process write queue", e);
-                for(int i = 0; i < batchSize; i++){
+            } catch (Exception e) {
+                log.error("Failed to Handler write queue",e);
+                for (int i = 0; i < currentSize; i++) {
                     batch[i].release();
                     batch[i] = null;
                 }
-                batchSize = 0;
+                currentSize = 0;
             }
         }
-    }
+     }
 
-    private void writeBatch(ByteBuf[] batch, int batchSize) {
-        if(batchSize <= 0) return;
-        try{
-            int totalBytes = 0;
-            for(int i = 0; i < batchSize; i++){
-                totalBytes += batch[i].readableBytes();
-            }
 
-            ByteBuffer buffer = ByteBuffer.allocate(totalBytes);
 
-            for(int i = 0; i < batchSize; i++){
-                buffer.put(batch[i].nioBuffer());
-            }
-            buffer.flip();
-            writer.write(buffer);
-        }catch(Exception e){
-            log.error("Failed to write batch to AOF file", e);
-        }
-    }
 
-    public void write(ByteBuf byteBuf) throws IOException {
-        int byteSize = byteBuf.readableBytes();
-        if(byteSize > LARGE_COMMAND_THRESHOLD){
-            try{
-                ByteBuffer byteBuffer = byteBuf.nioBuffer();
-                writer.write(byteBuffer);
-            }finally {
-                byteBuf.release();
+    /**
+     * 刷盘
+     * @param buffer
+     * @return
+     */
+    public int write(ByteBuf buffer) throws IOException {
+        int readAbleBytes = buffer.readableBytes();
+        // big key
+        if (readAbleBytes > LAGER_CMD_THRESHOLD) {
+            try {
+                aofWriter.write(buffer);
+            } finally {
+                buffer.release();
             }
         }
-        // 背压机制
-        pendingBytes.addAndGet(byteSize);
-        if(pendingBytes.get() > DEFAULT_BACKPRESSURE_THRESHOLD ||
-                writeQueue.size() > DEFAULT_QUEUE_SIZE * 0.75){
+        // 背压
+        pendingBytes.addAndGet(readAbleBytes);
+        if (pendingBytes.get() > DEFAULT_BACKPRESSURE_THRESHOLD || writeQueue.size() > DEFAULT_QUEUE_SIZE * 0.75) {
             applyBackpressure();
         }
 
-        try{
-            boolean success = writeQueue.offer(byteBuf, 3, TimeUnit.SECONDS);
-            if(!success){
-                ByteBuffer byteBuffer = byteBuf.nioBuffer();
-                writer.write(byteBuffer);
-                byteBuf.release();
+        try {
+            boolean success = writeQueue.offer(buffer, 3, TimeUnit.SECONDS);
+            if (!success) {
+                aofWriter.write(buffer);
+                buffer.release();
             }
             forceFlush.set(true);
-        }catch(Exception e){
-            byteBuf.release();
+        } catch (Exception e) {
+            buffer.release();
             Thread.currentThread().interrupt();
         }
-
+        return -1;
     }
 
+
+    @Override
+    public void flush() throws IOException {
+        while (!writeQueue.isEmpty()) {
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+            aofWriter.flush();
+        }
+    }
+
+
+    @Override
+    public void close() throws IOException {
+        if (flushThread != null) {
+            flushThread.shutdown();
+            try {
+                flushThread.shutdownNow();
+                flushThread.awaitTermination(3, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                flushThread.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
+        flush();
+        running.set(false);
+        writeThread.interrupt();
+    }
+
+    /**
+     * 背压设置 todo 后续优化
+     */
     private void applyBackpressure() {
         if(pendingBytes.get() > DEFAULT_BACKPRESSURE_THRESHOLD){
             try{
@@ -201,35 +285,12 @@ public class AOFBatchWriter {
         }
     }
 
-    public void close() throws IOException {
-        if(flushScheduler != null){
-            flushScheduler.shutdown();
-            try{
-                flushScheduler.shutdownNow();
-                flushScheduler.awaitTermination(3, TimeUnit.SECONDS);
-            }catch(InterruptedException e){
-                flushScheduler.shutdownNow();
-                Thread.currentThread().interrupt();
-            }
-        }
-        flush();
-        running.set(false);
-        writeThread.interrupt();
-    }
 
-    public void flush() throws IOException {
-        while(!writeQueue.isEmpty()){
-            try{
-                Thread.sleep(1);
-            }catch(InterruptedException e){
-                Thread.currentThread().interrupt();
-                break;
-            }
-            writer.flush();
-        }
-    }
-
-    private long calculateTimeout(int currentBatchSize) {
+    /**
+     * todo 后续优化
+     * @return
+     */
+    private long calculateTimeout() {
         int queueSize = writeQueue.size();
         if(queueSize > DEFAULT_QUEUE_SIZE / 2){
             return MIN_BATCH_TIMEOUT_MS;
@@ -237,9 +298,26 @@ public class AOFBatchWriter {
         return MAX_BATCH_TIMEOUT_MS;
     }
 
-    private int calculateBatchSize(int batchSize) {
+    /**
+     * todo 后续优化
+     * @return
+     */
+    private int calculateBatchSize() {
         int queueSize = writeQueue.size();
-        int result = Math.min(MAX_BATCH_SIZE,Math.min(MIN_BATCH_SIZE, MIN_BATCH_SIZE + queueSize / 20));
-        return result;
+        return  Math.min(MAX_BATCH_SIZE,Math.min(MIN_BATCH_SIZE, MIN_BATCH_SIZE + queueSize / 20));
     }
+
+    private void writeBatch(ByteBuf[] batch, int batchSize) {
+        try {
+            CompositeByteBuf comBuffer = Unpooled.compositeBuffer();
+            for (int i = 0; i < batchSize; i++) {
+                comBuffer.addComponent(true,batch[i].retain());
+            }
+            aofWriter.write(comBuffer);
+        } catch (Exception e) {
+            log.error("Failed to write batch to AOF file",e);
+        }
+    }
+
+
 }

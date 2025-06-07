@@ -30,11 +30,11 @@ public class Lpush extends AbstractCommand {
 
     @Override
     public Resp handle() {
-        handlerArgs();
-        return new RSimpleStrings("ok");
+        int count = handlerArgs();
+        return new RSimpleStrings(String.valueOf(count));
     }
 
-    private void handlerArgs() {
+    private int handlerArgs() {
         RedisString key = RedisString.Instance().setValue(content[0]);
         List<RedisString> list = new ArrayList<>();
         for (int i = 1; i < content.length; i++) {
@@ -43,5 +43,6 @@ public class Lpush extends AbstractCommand {
         RedisList<RedisString> values = RedisList.Instance();
         values.lPush(list);
         redisCore.put(key,values);
+        return content.length - 1;
     }
 }

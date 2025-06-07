@@ -49,7 +49,9 @@ public class RespCMDHandler extends SimpleChannelInboundHandler<Resp> {
                 CMDTypeEnum cmdTypeEnum = CMDTypeEnum.valueOf(commandName);
                 Command cmd = cmdTypeEnum.getSupplier().apply(redisCore).setContext(resps);
                 ctx.channel().writeAndFlush(cmd.handle());
-                aofManager.append((RArrays) msg);
+                if (aofManager != null) {
+                    aofManager.append((RArrays) msg);
+                }
             } catch (IllegalArgumentException e) {
                 ctx.channel().writeAndFlush(new RErrors("命令不存在!"));
             }

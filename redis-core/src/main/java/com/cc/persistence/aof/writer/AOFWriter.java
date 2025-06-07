@@ -1,74 +1,49 @@
 package com.cc.persistence.aof.writer;
 
+import io.netty.buffer.ByteBuf;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @program: cc-simple-redis
- * @description:
+ * @description: 负责文件写入
  * @author: ccstar
  * @create: 2025-06-07  14:31
  **/
 
-
+@Getter
+@Setter
 public class AOFWriter implements Writer{
 
     private File file;
 
-    /**
-     * 文件输入通道
-     */
-    private FileChannel channel;
+    private  FileChannel channel;
 
-    /**
-     * 文件访问
-     */
     private RandomAccessFile raf;
 
     /**
-     * 文件写入大小
+     * 预分配空间大小
      */
-    private AtomicLong size;
+    private final int DEFAULT_PREALLOCATE_SIZE;
 
-    /**
-     * 是否预分配内存
-     */
-    private boolean isPreallocated;
-
-    /**
-     * 预分配内存大小 4 * 1024 * 1024 4MB
-     */
-    private static final int DEFAULT_PREALLOCATE_SIZE = 4 * 1024 * 1024;
-
-    public AOFWriter(File file, boolean isPreallocated, int flushInterval, FileChannel channel) throws FileNotFoundException {
+    public AOFWriter(File file, int DEFAULT_PREALLOCATE_SIZE) throws IOException {
         this.file = file;
-        this.isPreallocated = isPreallocated;
-        if (channel == null) {
-            this.raf = new RandomAccessFile(file, "rw");
-            this.channel = raf.getChannel();
-            channel = this.channel;
-        } else {
-            this.channel = channel;
-        }
-
-        try {
-            this.size = new AtomicLong(channel.size());
-            if (isPreallocated) {
-                this.size.set(0);
-                preAllocated(DEFAULT_PREALLOCATE_SIZE);
-            }
-            this.channel.position(this.size.get());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        this.DEFAULT_PREALLOCATE_SIZE = DEFAULT_PREALLOCATE_SIZE;
+        this.raf = new RandomAccessFile(file, "rw");
+        this.channel = raf.getChannel();
+        preAllocated(DEFAULT_PREALLOCATE_SIZE);
     }
 
     private void preAllocated(int defaultPreallocateSize) throws IOException {
+        if (defaultPreallocateSize == 0) {
+            return;
+        }
         if (this.raf != null) {
             this.raf.setLength(defaultPreallocateSize);
             this.channel.position(0);
@@ -79,61 +54,42 @@ public class AOFWriter implements Writer{
     }
 
     /**
-     * 将byteBufeer写入 buffer
+     * 将buffer中数据写入FileChannel
      * @param buffer
      * @return
+     * @throws IOException
      */
     @Override
-    public int write(ByteBuffer buffer) {
-        int writeen = writtenFullyTo(channel, buffer);
-        size.addAndGet(writeen);
-        return writeen;
-    }
-
-    /**
-     * 完全写入
-     * @param channel
-     * @param buffer
-     * @return
-     */
-    private int writtenFullyTo(FileChannel channel, ByteBuffer buffer) {
-        int originalPosition = buffer.position();
-        int originalLimit = buffer.limit();
-        int totalBytes = buffer.remaining();
+    public int write(ByteBuf buffer) throws IOException {
+        ByteBuffer byteBuffer = buffer.nioBuffer();
+        int originalPosition = byteBuffer.position();
+        int originalLimit = byteBuffer.limit();
+        int totalBytes = byteBuffer.remaining();
         try {
-            int writeen = 0;
-            while (writeen < totalBytes) {
-                // 写入内核缓冲区
-                // 写入内核缓冲区
-                writeen += channel.write(buffer);
+            int written = 0;
+            while (written < totalBytes) {
+                written += channel.write(byteBuffer);
             }
-            return writeen;
-        } catch (IOException e) {
-            throw new RuntimeException();
+            return written;
         } finally {
-            buffer.position(originalPosition);
-            buffer.limit(originalLimit);
+            byteBuffer.position(originalPosition);
+            byteBuffer.limit(originalLimit);
         }
     }
 
-    /**
-     * 强制刷盘
-     * @throws IOException
-     */
     @Override
-    public void flush() throws IOException{
+    public void flush() throws IOException {
         channel.force(true);
     }
 
-    /**
-     * 关闭
-     * @throws IOException
-     */
     @Override
-    public void close() throws IOException{
+    public void close() throws IOException {
         flush();
-        channel.close();
-        if (raf != null) raf.close();
-
+        if (channel != null) {
+            channel.close();
+        }
+        if (raf != null) {
+            raf.close();
+        }
     }
 }

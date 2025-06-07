@@ -5,6 +5,7 @@ import com.cc.server.KVServer;
 import com.cc.server.redis.RedisServer;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * @program: cc-simple-redis
@@ -14,7 +15,7 @@ import java.io.FileNotFoundException;
  **/
 public class RedisServerLauncher
 {
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws IOException {
         // 监听所有访问本机端口6379连接
         KVServer redisServer = new RedisServer("0.0.0.0",6379,new RedisCoreImpl());
         redisServer.start();
