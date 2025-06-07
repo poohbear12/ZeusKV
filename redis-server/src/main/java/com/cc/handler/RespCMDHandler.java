@@ -6,6 +6,7 @@ import com.cc.cmd.Command;
 import com.cc.common.enmu.CMDTypeEnum;
 import com.cc.database.core.RedisCore;
 import com.cc.database.core.RedisCoreImpl;
+import com.cc.persistence.aof.AOFManager;
 import com.cc.protocal.resp.RArrays;
 import com.cc.protocal.resp.RBulkStrings;
 import com.cc.protocal.resp.RErrors;
@@ -28,6 +29,9 @@ import lombok.extern.slf4j.Slf4j;
 public class RespCMDHandler extends SimpleChannelInboundHandler<Resp> {
 
     private final RedisCore redisCore;
+
+    private AOFManager aofManager;
+
     /**
      * 处理指令
      * @param ctx
@@ -45,6 +49,7 @@ public class RespCMDHandler extends SimpleChannelInboundHandler<Resp> {
                 CMDTypeEnum cmdTypeEnum = CMDTypeEnum.valueOf(commandName);
                 Command cmd = cmdTypeEnum.getSupplier().apply(redisCore).setContext(resps);
                 ctx.channel().writeAndFlush(cmd.handle());
+                aofManager.append((RArrays) msg);
             } catch (IllegalArgumentException e) {
                 ctx.channel().writeAndFlush(new RErrors("命令不存在!"));
             }

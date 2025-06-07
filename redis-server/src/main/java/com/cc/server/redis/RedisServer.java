@@ -2,6 +2,7 @@ package com.cc.server.redis;
 
 import com.cc.database.core.RedisCore;
 import com.cc.database.core.RedisCoreImpl;
+import com.cc.persistence.aof.AOFManager;
 import com.cc.server.AbstractKVServer;
 import com.cc.server.KVServer;
 import io.netty.bootstrap.ServerBootstrap;
@@ -12,6 +13,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.FileNotFoundException;
 
 /**
  * @program: cc-simple-redis
@@ -29,13 +32,14 @@ public class RedisServer extends AbstractKVServer {
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private Channel serverChannel;
-
-    public RedisServer(String host, int port, RedisCore redisCore) {
+    private AOFManager aofManager;
+    public RedisServer(String host, int port, RedisCore redisCore) throws FileNotFoundException {
         this.host = host;
         this.port = port;
         this.redisCore = redisCore;
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup(1);
+        this.aofManager = new AOFManager("redis.aof");
     }
 
     @Override
@@ -45,7 +49,7 @@ public class RedisServer extends AbstractKVServer {
             serverBootstrap.group(bossGroup,workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .option(ChannelOption.SO_BACKLOG, 128)
-                    .childHandler(new RedisChannelInitializer(this.redisCore));
+                    .childHandler(new RedisChannelInitializer(this.redisCore, this.aofManager));
             serverChannel = serverBootstrap.bind(host, port).sync().channel();
             log.info("Redis server started on port {}", port);
             serverChannel.closeFuture().sync();

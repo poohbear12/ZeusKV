@@ -3,6 +3,7 @@ package com.cc.protocal.resp;
 
 import io.netty.buffer.ByteBuf;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.nio.charset.StandardCharsets;
 
@@ -14,6 +15,7 @@ import java.nio.charset.StandardCharsets;
  **/
 
 @Data
+@NoArgsConstructor
 public class RBulkStrings extends AbstracResp {
 
     private static final byte[] NULL_BYTES = "-1\r\n".getBytes();
@@ -63,5 +65,8 @@ public class RBulkStrings extends AbstracResp {
 
     public String getString(){
         return new String(content, StandardCharsets.UTF_8);
+    }
+    public RBulkStrings(byte[] content) {
+        this.content = content == null ? null : content;
     }
 }
