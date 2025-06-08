@@ -3,19 +3,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-
     <groupId>com.cc</groupId>
-    <artifactId>cc-simple-redis</artifactId>
+    <artifactId>zeus-kv</artifactId>
     <version>0.0.1</version>
     <packaging>pom</packaging>
 
-    <name>cc-simple-redis</name>
+    <name>zeus-kv</name>
+    <description>Zeus KV (分布式键值数据库 by Java)</description>
 
-    <description>简易版Redis by Java</description>
     <modules>
-        <module>redis-core</module>
-        <module>redis-server</module>
-        <module>redis-client</module>
+        <module>zeus-core</module>
+        <module>zeus-server</module>
+        <module>zeus-client</module>
     </modules>
 
     <properties>
