@@ -22,6 +22,8 @@ public enum CMDExceptionEnum {
     missingTerminatorError("命令缺少终止符!",3);
 
 
+
+
     private String name;
 
     private int code;

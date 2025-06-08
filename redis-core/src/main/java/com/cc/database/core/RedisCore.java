@@ -64,4 +64,9 @@ public interface RedisCore {
      */
     void flush();
 
+
+    boolean exists(String key);
+
+    int keyCount();
+
 }

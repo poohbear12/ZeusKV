@@ -6,6 +6,7 @@ import com.cc.database.core.RedisCore;
 import com.cc.database.datastructure.RedisList;
 import com.cc.database.datastructure.RedisObject;
 import com.cc.database.datastructure.RedisString;
+import com.cc.protocal.resp.RErrors;
 import com.cc.protocal.resp.RSimpleStrings;
 import com.cc.protocal.resp.Resp;
 import java.util.ArrayList;
@@ -30,6 +31,9 @@ public class Lpush extends AbstractCommand {
 
     @Override
     public Resp handle() {
+        if (content.length < 2) {
+            return new RErrors("指令过短!");
+        }
         int count = handlerArgs();
         return new RSimpleStrings(String.valueOf(count));
     }

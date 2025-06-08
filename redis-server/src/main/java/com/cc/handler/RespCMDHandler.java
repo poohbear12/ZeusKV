@@ -7,10 +7,7 @@ import com.cc.common.enmu.CMDTypeEnum;
 import com.cc.database.core.RedisCore;
 import com.cc.database.core.RedisCoreImpl;
 import com.cc.persistence.aof.AOFManager;
-import com.cc.protocal.resp.RArrays;
-import com.cc.protocal.resp.RBulkStrings;
-import com.cc.protocal.resp.RErrors;
-import com.cc.protocal.resp.Resp;
+import com.cc.protocal.resp.*;
 import com.cc.server.redis.ChannelHolder;
 import com.cc.server.redis.RedisServer;
 import io.netty.channel.ChannelHandlerContext;
@@ -44,18 +41,21 @@ public class RespCMDHandler extends SimpleChannelInboundHandler<Resp> {
         // 1. 通过解析命令名称来获取枚举类 -> 通过枚举类方法获取到命令实体 -> 执行命令方法 -> 获取到返回值
         if (msg instanceof RArrays) {
             Resp[] resps = ((RArrays) msg).getContent(); // 1. set 2. key 3. value...
-            String commandName = new String(((RBulkStrings) resps[0]).getContent()).toUpperCase();
-            try {
-                CMDTypeEnum cmdTypeEnum = CMDTypeEnum.valueOf(commandName);
-                Command cmd = cmdTypeEnum.getSupplier().apply(redisCore).setContext(resps);
-                ctx.channel().writeAndFlush(cmd.handle());
-                if (aofManager != null) {
-                    aofManager.append((RArrays) msg);
+                String commandName = new String(((RBulkStrings) resps[0]).getContent()).toUpperCase();
+                try {
+                    CMDTypeEnum cmdTypeEnum = CMDTypeEnum.valueOf(commandName);
+                    Command cmd = cmdTypeEnum.getSupplier().apply(redisCore).setContext(resps);
+                    ctx.channel().writeAndFlush(cmd.handle());
+                    if (aofManager != null) {
+                        // todo 后续优化
+                        if (commandName.equals("SET") || commandName.equals("LPUSH") || commandName.equals("LPOP")) {
+                            aofManager.append((RArrays) msg);
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    ctx.channel().writeAndFlush(new RErrors("命令不存在!"));
                 }
-            } catch (IllegalArgumentException e) {
-                ctx.channel().writeAndFlush(new RErrors("命令不存在!"));
             }
-        }
 
     }
 

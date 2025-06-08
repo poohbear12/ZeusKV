@@ -21,36 +21,10 @@ import java.nio.channels.FileChannel;
 @Setter
 public class AOFWriter implements Writer{
 
-    private File file;
-
     private  FileChannel channel;
 
-    private RandomAccessFile raf;
-
-    /**
-     * 预分配空间大小
-     */
-    private final int DEFAULT_PREALLOCATE_SIZE;
-
-    public AOFWriter(File file, int DEFAULT_PREALLOCATE_SIZE) throws IOException {
-        this.file = file;
-        this.DEFAULT_PREALLOCATE_SIZE = DEFAULT_PREALLOCATE_SIZE;
-        this.raf = new RandomAccessFile(file, "rw");
-        this.channel = raf.getChannel();
-        preAllocated(DEFAULT_PREALLOCATE_SIZE);
-    }
-
-    private void preAllocated(int defaultPreallocateSize) throws IOException {
-        if (defaultPreallocateSize == 0) {
-            return;
-        }
-        if (this.raf != null) {
-            this.raf.setLength(defaultPreallocateSize);
-            this.channel.position(0);
-        } else if (this.channel != null) {
-            this.channel.truncate(defaultPreallocateSize);
-            this.channel.position(0);
-        }
+    public AOFWriter(FileChannel channel) throws IOException {
+        this.channel = channel;
     }
 
     /**
@@ -87,9 +61,6 @@ public class AOFWriter implements Writer{
         flush();
         if (channel != null) {
             channel.close();
-        }
-        if (raf != null) {
-            raf.close();
         }
     }
 }

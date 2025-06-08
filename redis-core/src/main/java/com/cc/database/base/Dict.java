@@ -1,6 +1,8 @@
 package com.cc.database.base;
 
 
+import com.cc.database.datastructure.RedisString;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,5 +24,13 @@ public class Dict<K,V> {
 
     public V get(K key) {
         return map.get(key);
+    }
+
+    public boolean exists(String key) {
+        return map.containsKey(new RedisString(key));
+    }
+
+    public int size() {
+        return map.size();
     }
 }

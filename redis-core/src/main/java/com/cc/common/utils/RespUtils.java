@@ -43,8 +43,9 @@ public class RespUtils {
                 return new RBulkStrings().decode(buffer);
             case '*':
                 return new RArrays().decode(buffer);
+            case '\u0000':
+                return null;
             default:
-                buffer.clear();
                 throw new CMDException(CMDExceptionEnum.typeError);
         }
     }

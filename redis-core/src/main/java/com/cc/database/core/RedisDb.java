@@ -29,4 +29,12 @@ public class RedisDb {
     public RedisObject get(RedisString key) {
         return dict.get(key);
     }
+
+    public boolean exists(String key) {
+        return dict.exists(key);
+    }
+
+    public int keySize() {
+        return dict.size();
+    }
 }

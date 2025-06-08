@@ -4,6 +4,7 @@ import com.cc.common.enmu.CMDExceptionEnum;
 import com.cc.common.exception.CMDException;
 import io.netty.buffer.ByteBuf;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 
 /**
@@ -35,7 +36,8 @@ public abstract class AbstracResp implements Resp{
      */
     @Override
     public Resp decode(ByteBuf buffer) {
-        return absDecode(buffer);
+        Resp resp = absDecode(buffer);
+        return resp;
     }
 
     /**
@@ -75,8 +77,7 @@ public abstract class AbstracResp implements Resp{
      * @return
      */
     protected static int getNumber(ByteBuf buffer){
-        char c;
-        c = (char)buffer.readByte();
+        char c = (char)buffer.readByte();
         boolean positive = true;
         int value = 0;
         if(c == '-'){
@@ -85,14 +86,43 @@ public abstract class AbstracResp implements Resp{
         else{
             value = c - '0';
         }
-        while((c = (char)buffer.readByte()) != '\r' && buffer.readableBytes()>0){
-            value = value*10 + (c - '0');
+        while((c = (char)buffer.readByte()) != '\r' && buffer.readableBytes() > 0){
+            value = value * 10 + (c - '0');
         }
         if(buffer.readableBytes() <= 0 || buffer.readByte() != '\n'){
             throw new CMDException(CMDExceptionEnum.missingTerminatorError);
         }
         if(!positive){
             value = -value;
+        }
+        return value;
+    }
+
+    /**
+     *
+     * @param buffer
+     * @return
+     */
+    protected static int getInteger(ByteBuf buffer) {
+        char c = (char)buffer.readByte();
+        int value = 0;
+        if (c - '0' > 9) {
+            throw new CMDException(CMDExceptionEnum.commandError);
+        }
+        value = c - '0';
+        while (buffer.readableBytes() > 0) {
+            int currentIndex = buffer.readerIndex();
+            c = (char)buffer.readByte();
+            if (c >= '0' && c <= '9') {
+                value = value * 10 + (c - '0');
+            } else if (c == '\r') {
+                if ((c = (char)buffer.readByte()) == '\n') {
+                    break;
+                }
+            } else {
+                buffer.readerIndex(currentIndex);
+                break;
+            }
         }
         return value;
     }
