@@ -74,7 +74,7 @@ public class RedisServer extends AbstractKVServer {
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup(1);
         if (EnableAOF) {
-            this.aofManager = new AOFManager("redis.aof",flushInterval);
+            this.aofManager = new AOFManager("redis.aof",flushInterval,redisCore);
         }
     }
 

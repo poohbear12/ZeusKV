@@ -22,7 +22,7 @@ public class RArrays extends AbstracResp{
 
     @Override
     protected Resp absDecode(ByteBuf buffer) {
-        int number = getNumber(buffer);
+        int number = getInteger(buffer);
         content = new Resp[number];
         for(int i = 0; i < number; i++){
             content[i] = RespUtils.decodeU(buffer);

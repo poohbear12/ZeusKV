@@ -26,7 +26,7 @@ public class RBulkStrings extends AbstracResp {
     
     @Override
     protected Resp absDecode(ByteBuf buffer) {
-        int length = getNumber(buffer);
+        int length = getInteger(buffer);
         if(buffer.readableBytes() < length + 2){
             throw new IllegalStateException("没有找到换行符");
         }

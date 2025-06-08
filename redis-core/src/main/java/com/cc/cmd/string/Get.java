@@ -31,11 +31,13 @@ public class Get extends AbstractCommand {
     // todo 逻辑未优化
     @Override
     public Resp handle() {
-        RedisString value = handlerArgs();
-        if (value == null) {
+        try {
+            RedisString value = handlerArgs();
+            return new RSimpleStrings(value.getValue());
+        } catch (Exception e) {
             return new RErrors("key不存在!");
         }
-        return new RSimpleStrings(value.getValue());
+
     }
 
     private RedisString handlerArgs() {

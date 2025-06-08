@@ -102,4 +102,16 @@ public class RedisCoreImpl implements RedisCore {
     public void flush() {
 
     }
+
+    @Override
+    public boolean exists(String key) {
+        RedisDb redisDb = databases.get(currentDbIndex);
+        return redisDb.exists(key);
+    }
+
+    @Override
+    public int keyCount() {
+        RedisDb redisDb = databases.get(currentDbIndex);
+        return redisDb.keySize();
+    }
 }

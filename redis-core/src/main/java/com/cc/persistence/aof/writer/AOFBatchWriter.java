@@ -89,7 +89,7 @@ public class AOFBatchWriter implements Writer{
 
 
     public AOFBatchWriter(Writer aofWriter, int flushInterval) {
-        this(aofWriter,flushInterval,1000,
+        this(aofWriter,flushInterval,2000,
                 16,
                 50,
                 2,
@@ -211,6 +211,10 @@ public class AOFBatchWriter implements Writer{
      */
     public int write(ByteBuf buffer) throws IOException {
         int readAbleBytes = buffer.readableBytes();
+        pendingBytes.addAndGet(readAbleBytes);
+        if (pendingBytes.get() > DEFAULT_BACKPRESSURE_THRESHOLD || writeQueue.size() > DEFAULT_QUEUE_SIZE * 0.75) {
+            applyBackpressure();
+        }
         // big key
         if (readAbleBytes > LAGER_CMD_THRESHOLD) {
             try {
@@ -220,10 +224,6 @@ public class AOFBatchWriter implements Writer{
             }
         }
         // 背压
-        pendingBytes.addAndGet(readAbleBytes);
-        if (pendingBytes.get() > DEFAULT_BACKPRESSURE_THRESHOLD || writeQueue.size() > DEFAULT_QUEUE_SIZE * 0.75) {
-            applyBackpressure();
-        }
 
         try {
             boolean success = writeQueue.offer(buffer, 3, TimeUnit.SECONDS);
@@ -235,6 +235,9 @@ public class AOFBatchWriter implements Writer{
         } catch (Exception e) {
             buffer.release();
             Thread.currentThread().interrupt();
+        }
+        if (flushInterval == 0) {
+            aofWriter.flush();
         }
         return -1;
     }
