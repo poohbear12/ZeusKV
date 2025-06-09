@@ -1,0 +1,22 @@
+nodes:
+  name: zeus_one # 节点名称
+  host: localhost # 节点IP地址
+  port: 6379  # 节点端口地址
+  type: normal # 正常类型 单节点
+  clusterId: -1 # 集群ID
+  heartBeatInterval: -1 # 心跳检测间隔时间
+  failureDetectionTimeout: -1 # 故障检测超时时间
+  maxConnections: 10 # 最大连接数
+persistence:
+  aof:
+    enable: true # 是否开启
+    filename: zeus.aof # 文件名
+    defaultPreallocateSize: 1048576 # 文件预分配大小 1 * 1024 * 1024 1MB
+    flushInterval: 1000 # 刷盘间隔 单位 MS
+    lagerCmdThreshold: 524288 # 大key大小 512 * 1024 0.5 MB
+    defaultBackPressureThreshold: 62911456 # 背压阈值设置 6 * 1024 * 1024 6MB
+    defaultQueueSize: 1000 # 阻塞队列长度
+    minBatchSize: 16 # 最小批次大小
+    maxBatchSize: 50 # 最大批次大小
+    minBatchTimeOutMs: 2 # 最小批次间隔
+    maxBatchTimeOutMs: 10 # 最大批次间隔
