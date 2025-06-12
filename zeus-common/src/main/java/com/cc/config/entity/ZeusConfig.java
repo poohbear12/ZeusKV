@@ -1,6 +1,8 @@
-package com.cc.config;
+package com.cc.config.entity;
 
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @program: zeus-kv
@@ -13,10 +15,15 @@ public class ZeusConfig {
     /**
      * 节点配置类
      */
-    private NodeConfig nodeConfig;
+    private List<NodeConfig> nodes;
 
     /**
-     * 持久化配置类
+     * aof
      */
-    private PersistenceConfig persistenceConfig;
+    private AofConfig aof;
+
+    /**
+     * zdb
+     */
+    private ZdbConfig zdb;
 }

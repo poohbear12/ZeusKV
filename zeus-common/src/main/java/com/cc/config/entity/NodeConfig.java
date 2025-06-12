@@ -1,4 +1,4 @@
-package com.cc.config;
+package com.cc.config.entity;
 
 import lombok.Data;
 
@@ -19,7 +19,7 @@ public class NodeConfig {
     /**
      * 节点IP地址 127.0.0.1
      */
-    private String host;
+    private String addr;
 
     /**
      * 节点端口地址 6379
@@ -39,7 +39,7 @@ public class NodeConfig {
     /**
      * 心跳检测间隔时间 1000ms
      */
-    private int heartBeatInterval;
+    private int heartbeatInterval;
 
     /**
      * 故障检测超时时间 1000ms

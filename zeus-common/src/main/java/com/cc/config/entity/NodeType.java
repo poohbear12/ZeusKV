@@ -1,4 +1,4 @@
-package com.cc.config;
+package com.cc.config.entity;
 
 /**
  * @program: zeus-kv
@@ -12,7 +12,7 @@ public enum NodeType {
     /**
      * 普通节点 单机模式独有
      */
-    NORMAL,
+    SINGLE,
 
     /**
      * 主节点 集群模式

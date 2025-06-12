@@ -5,8 +5,3 @@
 /____|_____|\___/|____/  |_|\_\  \_/
 High Performance Distribute KV STORE
 Version 0.0.1 / 2025
-
-
-
-
-

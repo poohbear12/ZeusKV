@@ -18,7 +18,6 @@
     </properties>
 
     <dependencies>
-
         <!-- redis-common依赖 -->
         <dependency>
             <groupId>com.cc</groupId>

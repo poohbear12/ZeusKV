@@ -1,6 +1,8 @@
 package com.cc.persistence.aof;
 
 
+import com.cc.config.entity.AofConfig;
+import com.cc.config.entity.ZeusConfig;
 import com.cc.database.core.RedisCore;
 import com.cc.persistence.aof.loader.AOFLoader;
 import com.cc.persistence.aof.writer.AOFBatchWriter;
@@ -13,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
@@ -71,6 +74,12 @@ public class AOFManager {
         this.aofWriter = new AOFWriter(channel);
         this.aofBatchWriter = new AOFBatchWriter(aofWriter,flushInterval);
     }
+
+    public AOFManager(AofConfig config, RedisCore redisCore) throws IOException {
+        this(config.getFilename(),config.getFlushInterval(),redisCore);
+    }
+
+
 
     private void restoreAOF() throws IOException {
         File file = new File(fileName);

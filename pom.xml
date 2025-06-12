@@ -15,6 +15,7 @@
         <module>zeus-core</module>
         <module>zeus-server</module>
         <module>zeus-client</module>
+        <module>zeus-common</module>
     </modules>
 
     <properties>
