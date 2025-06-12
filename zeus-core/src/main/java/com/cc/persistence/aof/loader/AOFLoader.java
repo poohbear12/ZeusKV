@@ -37,10 +37,10 @@ public class AOFLoader {
 
 
     public static void loaderAOF(FileChannel channel, RedisCore redisCore) throws IOException {
-        log.info("加载AOF文件中");
+        log.info("AOF功能已开启: 加载AOF文件中 > > >");
         ByteBuf cmds = readFileContent(channel);
         int successCount = handlerCMDs(cmds, redisCore);
-        log.info("加载AOF文件成功,成功加载{}条命令", successCount);
+        log.info("AOF文件加载成功,成功加载{}条命令", successCount);
     }
 
     /**

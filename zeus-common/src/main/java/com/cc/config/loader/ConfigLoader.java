@@ -160,7 +160,7 @@ public class ConfigLoader {
 
     // 为AofConfig填充默认值
     private void fillDefaultAofValues(AofConfig aof) {
-        if (!aof.isEnable()) aof.setEnable(true); // 默认启用
+//        if (aof.isEnable()) aof.setEnable(true); // 默认启用
         if (aof.getFilename() == null) aof.setFilename("zeus.aof");
         if (aof.getPreallocateSize() <= 0) aof.setPreallocateSize(-1);
         if (aof.getFlushInterval() <= 0) aof.setFlushInterval(-1);
