@@ -33,6 +33,7 @@ public class ZeusKVServerLauncher
 
         // 1. 加载配置文件 默认加载zeus.yaml
         ConfigLoader configLoader = new ConfigLoader();
+
         ZeusConfig config = configLoader.getConfig();
 
         // 2. 检查配置环境
@@ -44,11 +45,10 @@ public class ZeusKVServerLauncher
         // 4. 输出启动成功日志
         BannerPrinter.printBannerFromFile();
 
-        log.info("启动耗时 {}", System.currentTimeMillis() - start + "MS");
         // 5. Netty启动
         KVServer server = new NettyServer(config);
 
-
+        log.info("启动IP地址:{} | 启动端口号:{} | 启动时间:{}", config.getNodes().get(0).getAddr(), config.getNodes().get(0).getPort(), System.currentTimeMillis() - start + " MS");
     }
 
 
