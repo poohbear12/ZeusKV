@@ -3,10 +3,7 @@ package com.cc.persistence.aof.writer;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -23,7 +20,7 @@ public class AOFWriter implements Writer{
 
     private  FileChannel channel;
 
-    public AOFWriter(FileChannel channel) throws IOException {
+    public AOFWriter(FileChannel channel) {
         this.channel = channel;
     }
 

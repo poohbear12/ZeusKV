@@ -1,13 +1,14 @@
-package com.cc.handler;
+package com.cc.server.netty.handler;
 
 import com.cc.cmd.Command;
 
 
 import com.cc.common.enmu.CMDTypeEnum;
 import com.cc.database.core.RedisCore;
+import com.cc.engine.EngineContainer;
 import com.cc.persistence.aof.AOFManager;
 import com.cc.protocal.resp.*;
-import com.cc.server.zeus.ChannelHolder;
+import com.cc.server.netty.NettyConnectionHolder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.AllArgsConstructor;
@@ -22,10 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @AllArgsConstructor
 public class RespCMDHandler extends SimpleChannelInboundHandler<Resp> {
-
-    private final RedisCore redisCore;
-
-    private AOFManager aofManager;
 
     /**
      * 处理指令
@@ -42,12 +39,12 @@ public class RespCMDHandler extends SimpleChannelInboundHandler<Resp> {
                 String commandName = new String(((RBulkStrings) resps[0]).getContent()).toUpperCase();
                 try {
                     CMDTypeEnum cmdTypeEnum = CMDTypeEnum.valueOf(commandName);
-                    Command cmd = cmdTypeEnum.getSupplier().apply(redisCore).setContext(resps);
+                    Command cmd = cmdTypeEnum.getSupplier().apply(EngineContainer.getStoreCore()).setContext(resps);
                     ctx.channel().writeAndFlush(cmd.handle());
-                    if (aofManager != null) {
+                    if (EngineContainer.getAOFManager() != null) {
                         // todo 后续优化
                         if (commandName.equals("SET") || commandName.equals("LPUSH") || commandName.equals("LPOP")) {
-                            aofManager.append((RArrays) msg);
+                            EngineContainer.getAOFManager().append((RArrays) msg);
                         }
                     }
                 } catch (IllegalArgumentException e) {
@@ -64,7 +61,7 @@ public class RespCMDHandler extends SimpleChannelInboundHandler<Resp> {
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        ChannelHolder.setChannel(ctx.channel().remoteAddress().toString(),ctx.channel());
+        NettyConnectionHolder.setChannel(ctx.channel().remoteAddress().toString(),ctx.channel());
     }
 
     /**
@@ -75,7 +72,7 @@ public class RespCMDHandler extends SimpleChannelInboundHandler<Resp> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         log.info("Redis client connection close! IP:" + ctx.channel().remoteAddress().toString());
-        ChannelHolder.removeChannel(ctx.channel().remoteAddress().toString());
+        NettyConnectionHolder.removeChannel(ctx.channel().remoteAddress().toString());
     }
 
     /**
@@ -88,6 +85,6 @@ public class RespCMDHandler extends SimpleChannelInboundHandler<Resp> {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.error("exception connection close! IP:{}",ctx.channel().remoteAddress().toString());
         log.error("Redis connextion exception! Exception:{}",cause);
-        ChannelHolder.removeChannel(ctx.channel().remoteAddress().toString());
+        NettyConnectionHolder.removeChannel(ctx.channel().remoteAddress().toString());
     }
 }

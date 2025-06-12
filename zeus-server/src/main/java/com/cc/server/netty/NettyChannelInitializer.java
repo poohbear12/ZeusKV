@@ -1,9 +1,9 @@
-package com.cc.server.zeus;
+package com.cc.server.netty;
 
 import com.cc.database.core.RedisCore;
-import com.cc.handler.RespCMDHandler;
-import com.cc.handler.RespDecoder;
-import com.cc.handler.RespEncoder;
+import com.cc.server.netty.handler.RespCMDHandler;
+import com.cc.server.netty.handler.RespDecoder;
+import com.cc.server.netty.handler.RespEncoder;
 import com.cc.persistence.aof.AOFManager;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -19,17 +19,14 @@ import lombok.AllArgsConstructor;
  **/
 
 @AllArgsConstructor
-public class ZeusChannelInitializer extends ChannelInitializer<SocketChannel> {
+public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
 
-    private final RedisCore redisCore;
-
-    private final AOFManager aofManager;
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast(new RespDecoder());
-        pipeline.addLast(new RespCMDHandler(redisCore, aofManager));
+        pipeline.addLast(new RespCMDHandler());
         pipeline.addLast(new RespEncoder());
 //        pipeline.addLast(new IdleStateHandler(60, 30, 0, TimeUnit.SECONDS));
 

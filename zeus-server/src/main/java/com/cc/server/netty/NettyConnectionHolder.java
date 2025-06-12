@@ -1,4 +1,4 @@
-package com.cc.server.zeus;
+package com.cc.server.netty;
 
 import io.netty.channel.Channel;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author: ccstar
  * @create: 2025-06-01  10:29
  **/
-public class ChannelHolder {
+public class NettyConnectionHolder {
 
     /**
      * channel池

@@ -8,6 +8,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+/**
+ * @program: zeus-kv
+ * @description: zeus server 启动器
+ * @author: ccstar
+ * @create: 2025-06-09  21:05
+ **/
 public class BannerPrinter {
 
     private static final Logger log = LoggerFactory.getLogger(BannerPrinter.class);
@@ -25,7 +31,6 @@ public class BannerPrinter {
                 log.error("未找到 banner.txt 文件，请确保文件位于类路径下");
                 return;
             }
-            
             String line;
             while ((line = reader.readLine()) != null) {
                 log.info(line); // 使用日志打印每一行
@@ -35,7 +40,6 @@ public class BannerPrinter {
             log.error("读取 banner.txt 失败: {}", e.getMessage());
         }
     }
-
     // 示例用法
     public static void main(String[] args) {
         printBannerFromFile(); // 调用方法打印 banner
