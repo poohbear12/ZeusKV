@@ -6,6 +6,7 @@ import com.cc.exception.ConfigException;
 import com.cc.server.KVServer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -52,6 +53,10 @@ public class NettyServer implements KVServer {
      */
     private int port;
 
+    /**
+     * 启动成功标志
+     */
+    private static boolean success = false;
 
     public NettyServer(ZeusConfig zeusConfig) {
         if (zeusConfig == null) {
@@ -72,29 +77,27 @@ public class NettyServer implements KVServer {
      */
     @Override
     public void start() {
-        log.info("Netty服务启动中!");
-        try {
-            serverChannel = new ServerBootstrap().
+        long startTime = System.currentTimeMillis();
+            ChannelFuture future = new ServerBootstrap().
                     group(Acceptor, Handler).
                     channel(NioServerSocketChannel.class).
                     option(ChannelOption.SO_BACKLOG, maxConnections).
                     childHandler(new NettyChannelInitializer()).
-                    bind(addr, port)
-                    .sync().channel();
+                    bind(addr, port);
+            future.addListener(f -> {
+                if (f.isSuccess()) {
+                    serverChannel = future.channel();
+                    // 异步等待服务器关闭
+                    serverChannel.closeFuture().addListener(closeFuture -> {
+                        long totalTime = System.currentTimeMillis() - startTime;
+                        log.info("Netty服务已关闭，总运行时间: {}ms", totalTime);
+                    });
+                } else {
+                    log.error("Netty服务启动失败{}", f.cause().getMessage());
+                }
+            });
 
-            log.info("启动IP地址:{},启动端口号:{}",addr, port);
-            log.info("Netty服务启动成功!");
-            serverChannel.closeFuture().sync();
-        } catch (InterruptedException e) {
-            log.info("线程被中断:{}",e);
-        } finally {
-            if (Acceptor != null) {
-                Acceptor.shutdownGracefully();
-            }
-            if (Handler != null) {
-                Handler.shutdownGracefully();
-            }
-        }
+
     }
 
     /**

@@ -36,7 +36,9 @@ public class EngineContainer {
 
     private EngineContainer(ZeusConfig config) throws IOException {
         storeCore = new RedisCoreImpl();
-        aofManager = new AOFManager(config.getAof(), storeCore);
+        if (config.getAof().isEnable()) {
+            aofManager = new AOFManager(config.getAof(), storeCore);
+        }
     }
 
     /**
