@@ -21,18 +21,16 @@ import java.io.IOException;
 public class ZeusKVServerLauncher
 {
     public static void main(String[] args) {
-        long start = System.currentTimeMillis();
-
         try {
             start();
         } catch (IOException e) {
             log.error("IO异常!{}",e);
         }
-
-        log.info("启动耗时 {}", System.currentTimeMillis() - start + "MS");
     }
 
     static void start() throws IOException {
+        long start = System.currentTimeMillis();
+
         // 1. 加载配置文件 默认加载zeus.yaml
         ConfigLoader configLoader = new ConfigLoader();
         ZeusConfig config = configLoader.getConfig();
@@ -46,6 +44,7 @@ public class ZeusKVServerLauncher
         // 4. 输出启动成功日志
         BannerPrinter.printBannerFromFile();
 
+        log.info("启动耗时 {}", System.currentTimeMillis() - start + "MS");
         // 5. Netty启动
         KVServer server = new NettyServer(config);
 
