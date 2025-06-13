@@ -17,7 +17,11 @@ import java.util.List;
 @Slf4j
 public class EnvCheck {
 
-
+    /**
+     *
+     * @param config
+     * @return
+     */
     public static boolean check(ZeusConfig config) {
         log.info("启动环境检测开启!");
         // 1. 检测参数配置类型是否合法
@@ -41,7 +45,6 @@ public class EnvCheck {
      * @return
      */
     private static boolean checkAddrAndPort(List<NodeConfig> nodeConfigs) {
-
         return true;
     }
 
