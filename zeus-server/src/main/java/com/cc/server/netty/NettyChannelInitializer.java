@@ -1,13 +1,11 @@
 package com.cc.server.netty;
 
-import com.cc.database.core.RedisCore;
 import com.cc.server.netty.handler.RespCMDHandler;
 import com.cc.server.netty.handler.RespDecoder;
 import com.cc.server.netty.handler.RespEncoder;
-import com.cc.persistence.aof.AOFManager;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.ChannelInitializer;
 import lombok.AllArgsConstructor;
 
 

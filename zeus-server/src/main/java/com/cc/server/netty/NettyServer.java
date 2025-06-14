@@ -20,43 +20,38 @@ import lombok.extern.slf4j.Slf4j;
  * @create: 2025-06-01  07:57
  **/
 
+
 @Slf4j
 public class NettyServer implements KVServer {
 
     /**
+     * 启动成功标志
+     */
+    private static final boolean SUCCESS = false;
+    /**
      * 任务派发线程
      */
-    private EventLoopGroup Acceptor;
-
+    private final EventLoopGroup acceptor;
     /**
      * 任务处理线程
      */
-    private EventLoopGroup Handler;
-
+    private final EventLoopGroup handler;
+    /**
+     * 最大连接数
+     */
+    private final int maxConnections;
+    /**
+     * IP地址
+     */
+    private final String addr;
+    /**
+     * 端口号
+     */
+    private final int port;
     /**
      * 连接管理
      */
     private Channel serverChannel;
-
-    /**
-     * 最大连接数
-     */
-    private int maxConnections;
-
-    /**
-     * IP地址
-     */
-    private String addr;
-
-    /**
-     * 端口号
-     */
-    private int port;
-
-    /**
-     * 启动成功标志
-     */
-    private static boolean success = false;
 
     public NettyServer(ZeusConfig zeusConfig) {
         if (zeusConfig == null) {
@@ -66,8 +61,8 @@ public class NettyServer implements KVServer {
         NodeConfig nodeConfig = zeusConfig.getNodes().get(0);
         this.addr = nodeConfig.getAddr();
         this.port = nodeConfig.getPort();
-        this.Acceptor = new NioEventLoopGroup(1);
-        this.Handler = new NioEventLoopGroup(1);
+        this.acceptor = new NioEventLoopGroup(1);
+        this.handler = new NioEventLoopGroup(1);
         this.maxConnections = nodeConfig.getMaxConnections();
         start();
     }
@@ -77,25 +72,22 @@ public class NettyServer implements KVServer {
      */
     @Override
     public void start() {
-        long startTime = System.currentTimeMillis();
-            ChannelFuture future = new ServerBootstrap().
-                    group(Acceptor, Handler).
-                    channel(NioServerSocketChannel.class).
-                    option(ChannelOption.SO_BACKLOG, maxConnections).
-                    childHandler(new NettyChannelInitializer()).
-                    bind(addr, port);
-            future.addListener(f -> {
-                if (f.isSuccess()) {
-                    serverChannel = future.channel();
-                    // 异步等待服务器关闭
-                    serverChannel.closeFuture().addListener(closeFuture -> {
-                        long totalTime = System.currentTimeMillis() - startTime;
-                        log.info("Netty服务已关闭，总运行时间: {}ms", totalTime);
-                    });
-                } else {
-                    log.error("Netty服务启动失败{}", f.cause().getMessage());
-                }
-            });
+        ChannelFuture future = new ServerBootstrap().
+                group(acceptor, handler).
+                channel(NioServerSocketChannel.class).
+                option(ChannelOption.SO_BACKLOG, maxConnections).
+                childHandler(new NettyChannelInitializer()).
+                bind(addr, port);
+        future.addListener(f -> {
+            if (f.isSuccess()) {
+                serverChannel = future.channel();
+                // 异步等待服务器关闭
+                serverChannel.closeFuture().addListener(closeFuture -> {
+                });
+            } else {
+                log.error("Netty服务启动失败{}", f.cause().getMessage());
+            }
+        });
 
 
     }
@@ -105,11 +97,11 @@ public class NettyServer implements KVServer {
      */
     @Override
     public void stop() {
-        if (Acceptor != null) {
-            Acceptor.shutdownGracefully();
+        if (acceptor != null) {
+            acceptor.shutdownGracefully();
         }
-        if (Handler != null) {
-            Handler.shutdownGracefully();
+        if (handler != null) {
+            handler.shutdownGracefully();
         }
         if (serverChannel != null) {
             serverChannel.close();

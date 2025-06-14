@@ -16,12 +16,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RespEncoder extends MessageToByteEncoder<Resp> {
 
+    @SuppressWarnings("checkstyle:WhitespaceAround")
     @Override
     protected void encode(ChannelHandlerContext ctx, Resp msg, ByteBuf out) throws Exception {
         // todo 逻辑待优化
-        try{
+        try {
             msg.encode(out);
-        }catch(Exception e){
+        } catch (Exception e) {
             log.error("encode error");
             ctx.channel().close();
         }

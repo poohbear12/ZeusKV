@@ -23,25 +23,24 @@ public class RespDecoder extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf in, List<Object> out) throws Exception {
         //todo 粘包
-        try{
-            if(in.readableBytes() > 0){
+        try {
+            if (in.readableBytes() > 0) {
                 in.markReaderIndex();
             }
-            if(in.readableBytes() < 4){
+            if (in.readableBytes() < 4) {
                 return;
             }
-            try{
+            try {
                 Resp resp = RespUtils.decodeU(in);
-                if(resp != null){
+                if (resp != null) {
                     log.info("decode resp:{}", resp);
                     out.add(resp);
                 }
-            }catch(Exception e){
+            } catch (Exception e) {
                 log.error("decode error");
                 in.resetReaderIndex();
-                return;
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             log.error("decode error", e);
         }
     }
