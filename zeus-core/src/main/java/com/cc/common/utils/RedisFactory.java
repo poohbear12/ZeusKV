@@ -11,10 +11,10 @@ import com.cc.database.datastructure.RedisString;
 
 
 public class RedisFactory<T> {
-    public <T> T get(Class clazz) {
-        if (clazz.equals(RedisString.class)) {
-            return (T) new RedisString();
-        }
-        return null;
+  public <T> T get(Class clazz) {
+    if (clazz.equals(RedisString.class)) {
+      return (T) new RedisString();
     }
+    return null;
+  }
 }

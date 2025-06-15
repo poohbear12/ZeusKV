@@ -12,8 +12,8 @@ import lombok.Data;
 @Data
 public class ZdbConfig {
 
-    /**
-     * 是否开启持久化
-     */
-    private boolean enable;
+  /**
+   * 是否开启持久化
+   */
+  private boolean enable;
 }

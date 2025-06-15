@@ -11,29 +11,30 @@ import com.cc.protocal.resp.Resp;
  * @create: 2025-06-03  16:46
  **/
 
-public abstract class AbstractCommand implements Command{
+public abstract class AbstractCommand implements Command {
 
-    protected final RedisCore redisCore;
+  protected final RedisCore redisCore;
 
-    protected String[] content;
+  protected String[] content;
 
-    public AbstractCommand(RedisCore redisCore) {
-        this.redisCore = redisCore;
+  public AbstractCommand(RedisCore redisCore) {
+    this.redisCore = redisCore;
+  }
+
+  /**
+   * Resp[] -> String[] 协议解析 key value value
+   *
+   * @param resps
+   * @return
+   */
+  @Override
+  public Command setContext(Resp[] resps) {
+    this.content = new String[resps.length - 1];
+    for (int i = 1; i < resps.length; i++) {
+      content[i - 1] = new String(((RBulkStrings) resps[i]).getContent());
     }
-
-    /**
-     * Resp[] -> String[] 协议解析 key value value
-     * @param resps
-     * @return
-     */
-    @Override
-    public Command setContext(Resp[] resps) {
-        this.content = new String[resps.length - 1];
-        for (int i = 1; i < resps.length; i++) {
-            content[i - 1] =  new String(((RBulkStrings) resps[i]).getContent());
-        }
-        return this;
-    }
+    return this;
+  }
 
 
 }

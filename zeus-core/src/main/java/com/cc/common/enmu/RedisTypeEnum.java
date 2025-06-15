@@ -10,11 +10,11 @@ package com.cc.common.enmu;
 
 public enum RedisTypeEnum {
 
-    string(RedisEncodingTypeEnmu.raw);
+  string(RedisEncodingTypeEnmu.raw);
 
-    private RedisEncodingTypeEnmu encoding;
+  private RedisEncodingTypeEnmu encoding;
 
-    RedisTypeEnum(RedisEncodingTypeEnmu encoding){
-        this.encoding = encoding;
-    }
+  RedisTypeEnum(RedisEncodingTypeEnmu encoding) {
+    this.encoding = encoding;
+  }
 }

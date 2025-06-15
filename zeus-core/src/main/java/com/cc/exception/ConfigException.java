@@ -8,15 +8,15 @@ package com.cc.exception;
  **/
 
 
-public class ConfigException extends BusinessException{
+public class ConfigException extends BusinessException {
 
 
-    public ConfigException(String requestId, String errorCode, String message) {
-        super(requestId, errorCode, message);
-    }
+  public ConfigException(String requestId, String errorCode, String message) {
+    super(requestId, errorCode, message);
+  }
 
-    public ConfigException() {
-        super("默认","er:1", "配置信息异常,请检查!");
-    }
+  public ConfigException() {
+    super("默认", "er:1", "配置信息异常,请检查!");
+  }
 
 }

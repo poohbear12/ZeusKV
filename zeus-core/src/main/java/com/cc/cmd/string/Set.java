@@ -18,29 +18,29 @@ import com.cc.protocal.resp.Resp;
 public class Set extends AbstractCommand {
 
 
-    @Override
-    public CMDTypeEnum getCommand() {
-        return CMDTypeEnum.SET;
-    }
+  public Set(RedisCore redisCore) {
+    super(redisCore);
+  }
 
-    // todo 逻辑未优化
-    @Override
-    public Resp handle() {
-        if (content.length < 2) {
-            return new RErrors("Set: 参数缺失!");
-        }
-        handlerArgs();
-        return new RSimpleStrings("OK");
-    }
+  @Override
+  public CMDTypeEnum getCommand() {
+    return CMDTypeEnum.SET;
+  }
 
-    private void handlerArgs() {
-        RedisString key = RedisString.Instance().setValue(content[0]);
-        RedisString value = RedisString.Instance().setValue(content[1]);
-        redisCore.put(key,value);
+  // todo 逻辑未优化
+  @Override
+  public Resp handle() {
+    if (content.length < 2) {
+      return new RErrors("Set: 参数缺失!");
     }
+    handlerArgs();
+    return new RSimpleStrings("OK");
+  }
 
-    public Set(RedisCore redisCore) {
-        super(redisCore);
-    }
+  private void handlerArgs() {
+    RedisString key = RedisString.Instance().setValue(content[0]);
+    RedisString value = RedisString.Instance().setValue(content[1]);
+    redisCore.put(key, value);
+  }
 
 }

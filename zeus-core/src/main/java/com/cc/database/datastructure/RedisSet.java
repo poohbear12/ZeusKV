@@ -10,16 +10,16 @@ import java.util.Set;
  * @create: 2025-06-03  15:09
  **/
 
-public class RedisSet<T> implements RedisObject{
-    // todo 暂时
-    private final Set<T> set = new HashSet<>();
+public class RedisSet<T> implements RedisObject {
+  // todo 暂时
+  private final Set<T> set = new HashSet<>();
 
-    public void set(T value) {
-        set.add(value);
-    }
+  public void set(T value) {
+    set.add(value);
+  }
 
-    public void del(T value) {
-        set.remove(value);
-    }
+  public void del(T value) {
+    set.remove(value);
+  }
 
 }

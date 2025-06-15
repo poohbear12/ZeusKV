@@ -13,19 +13,19 @@ import com.cc.protocal.resp.Resp;
  **/
 
 
-public class Ping extends AbstractCommand{
+public class Ping extends AbstractCommand {
 
-    public Ping(RedisCore redisCore) {
-        super(redisCore);
-    }
+  public Ping(RedisCore redisCore) {
+    super(redisCore);
+  }
 
-    @Override
-    public CMDTypeEnum getCommand() {
-        return CMDTypeEnum.PING;
-    }
+  @Override
+  public CMDTypeEnum getCommand() {
+    return CMDTypeEnum.PING;
+  }
 
-    @Override
-    public Resp handle() {
-        return new RSimpleStrings("PONG");
-    }
+  @Override
+  public Resp handle() {
+    return new RSimpleStrings("PONG");
+  }
 }

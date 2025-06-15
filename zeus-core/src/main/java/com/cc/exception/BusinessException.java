@@ -7,12 +7,11 @@ package com.cc.exception;
  * @create: 2025-06-12  19:54
  **/
 
-public class BusinessException extends KVStoreException{
+public class BusinessException extends KVStoreException {
 
-    public BusinessException(String requestId, String errorCode, String message) {
-        super(requestId, errorCode, message);
-    }
-
+  public BusinessException(String requestId, String errorCode, String message) {
+    super(requestId, errorCode, message);
+  }
 
 
 }

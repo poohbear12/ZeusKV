@@ -6,6 +6,6 @@ public class StoreNotInitException extends BusinessException {
   }
 
   public StoreNotInitException() {
-    super("默认","1","存储核心未初始化");
+    super("默认", "1", "存储核心未初始化");
   }
 }

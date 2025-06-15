@@ -9,5 +9,5 @@ package com.cc.common.enmu;
 
 
 public enum RedisEncodingTypeEnmu {
-    raw();
+  raw();
 }

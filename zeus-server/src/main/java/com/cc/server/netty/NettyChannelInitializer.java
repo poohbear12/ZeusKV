@@ -20,13 +20,13 @@ import lombok.AllArgsConstructor;
 public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
 
 
-    @Override
-    protected void initChannel(SocketChannel ch) throws Exception {
-        ChannelPipeline pipeline = ch.pipeline();
-        pipeline.addLast(new RespDecoder());
-        pipeline.addLast(new RespCMDHandler());
-        pipeline.addLast(new RespEncoder());
+  @Override
+  protected void initChannel(SocketChannel ch) throws Exception {
+    ChannelPipeline pipeline = ch.pipeline();
+    pipeline.addLast(new RespDecoder());
+    pipeline.addLast(new RespCMDHandler());
+    pipeline.addLast(new RespEncoder());
 //        pipeline.addLast(new IdleStateHandler(60, 30, 0, TimeUnit.SECONDS));
 
-    }
+  }
 }

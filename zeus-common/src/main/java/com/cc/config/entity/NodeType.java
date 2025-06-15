@@ -9,24 +9,24 @@ package com.cc.config.entity;
 
 
 public enum NodeType {
-    /**
-     * 普通节点 单机模式独有
-     */
-    SINGLE,
+  /**
+   * 普通节点 单机模式独有
+   */
+  SINGLE,
 
-    /**
-     * 主节点 集群模式
-     */
-    MASTER,
+  /**
+   * 主节点 集群模式
+   */
+  MASTER,
 
-    /**
-     * 从节点 集群模式
-     */
-    SLAVE,
+  /**
+   * 从节点 集群模式
+   */
+  SLAVE,
 
-    /**
-     * 遗失节点 集群模式
-     */
-    LOST;
+  /**
+   * 遗失节点 集群模式
+   */
+  LOST;
 
 }

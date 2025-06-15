@@ -34,3 +34,4 @@ build/
 /logs
 /record.md
 **/test
+/zeus.aof

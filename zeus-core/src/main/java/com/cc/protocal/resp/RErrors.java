@@ -15,19 +15,20 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RErrors extends AbstracResp{
+public class RErrors extends AbstracResp {
 
-    private String content;
-    @Override
-    protected Resp absDecode(ByteBuf buffer) {
-        this.content = getString(buffer);
-        return this;
-    }
+  private String content;
 
-    @Override
-    protected void absEncode(ByteBuf buffer) {
-        buffer.writeByte('-');
-        buffer.writeBytes(this.content.getBytes());
-        buffer.writeBytes(CRLF);
-    }
+  @Override
+  protected Resp absDecode(ByteBuf buffer) {
+    this.content = getString(buffer);
+    return this;
+  }
+
+  @Override
+  protected void absEncode(ByteBuf buffer) {
+    buffer.writeByte('-');
+    buffer.writeBytes(this.content.getBytes());
+    buffer.writeBytes(CRLF);
+  }
 }

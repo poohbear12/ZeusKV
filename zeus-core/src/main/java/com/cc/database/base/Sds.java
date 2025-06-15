@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Sds {
-    // todo 后续可以改成bytes
-    private String value;
+  // todo 后续可以改成bytes
+  private String value;
 }

@@ -16,28 +16,28 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RArrays extends AbstracResp{
+public class RArrays extends AbstracResp {
 
-    private Resp[] content;
+  private Resp[] content;
 
-    @Override
-    protected Resp absDecode(ByteBuf buffer) {
-        int number = getInteger(buffer);
-        content = new Resp[number];
-        for(int i = 0; i < number; i++){
-            content[i] = RespUtils.decodeU(buffer);
-        }
-        return this;
+  @Override
+  protected Resp absDecode(ByteBuf buffer) {
+    int number = getInteger(buffer);
+    content = new Resp[number];
+    for (int i = 0; i < number; i++) {
+      content[i] = RespUtils.decodeU(buffer);
     }
+    return this;
+  }
 
-    @Override
-    protected void absEncode(ByteBuf buffer) {
-        buffer.writeByte('*');
-        buffer.writeBytes(Integer.toString(content.length).getBytes());
-        for(Resp r : content) {
-            r.encode(buffer);
-        }
-        buffer.writeBytes(CRLF);
+  @Override
+  protected void absEncode(ByteBuf buffer) {
+    buffer.writeByte('*');
+    buffer.writeBytes(Integer.toString(content.length).getBytes());
+    for (Resp r : content) {
+      r.encode(buffer);
     }
+    buffer.writeBytes(CRLF);
+  }
 
 }

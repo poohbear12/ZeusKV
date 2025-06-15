@@ -1,7 +1,6 @@
 package com.cc.persistence.aof.writer;
 
 import io.netty.buffer.ByteBuf;
-
 import java.io.IOException;
 
 /**
@@ -13,23 +12,26 @@ import java.io.IOException;
 
 public interface Writer {
 
-    /**
-     * 写入内核缓冲区
-     * @param buffer
-     * @return
-     * @throws IOException
-     */
-    int write(ByteBuf buffer) throws IOException;
+  /**
+   * 写入内核缓冲区
+   *
+   * @param buffer
+   * @return
+   * @throws IOException
+   */
+  int write(ByteBuf buffer) throws IOException;
 
-    /**
-     * 刷盘
-     * @throws IOException
-     */
-    void flush() throws IOException;
+  /**
+   * 刷盘
+   *
+   * @throws IOException
+   */
+  void flush() throws IOException;
 
-    /**
-     * 关闭
-     * @throws IOException
-     */
-    void close() throws IOException;
+  /**
+   * 关闭
+   *
+   * @throws IOException
+   */
+  void close() throws IOException;
 }

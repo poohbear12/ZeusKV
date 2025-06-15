@@ -16,7 +16,7 @@
     Authors: Max Vetrenko, Ruslan Diachenko, Roman Ivanov.
  -->
 
-<module name = "Checker">
+<module name="Checker">
     <property name="charset" value="UTF-8"/>
 
     <!-- 规则等级，error、warning、info，此处针对所有规则生效，规则单独配置需要加到规则module中 -->
@@ -31,7 +31,7 @@
     <!-- https://checkstyle.org/config_filters.html#SuppressionFilter -->
     <module name="SuppressionFilter">
         <property name="file" value="${org.checkstyle.google.suppressionfilter.config}"
-                  default="checkstyle-suppressions.xml" />
+                  default="checkstyle-suppressions.xml"/>
         <property name="optional" value="true"/>
     </module>
 
@@ -52,10 +52,24 @@
         <module name="OuterTypeFilename"/>
         <module name="IllegalTokenText">
             <property name="tokens" value="STRING_LITERAL, CHAR_LITERAL"/>
-            <property name="format"
-                      value="\u00(09|0(a|A)|0(c|C)|0(d|D)|22|27|5(C|c))|\(0(10|11|12|14|15|42|47)|134)"/>
-            <property name="message"
-                      value="Consider using special escape sequence instead of octal value or Unicode escaped value."/>
+            <property name="format" value="
+        \\u0009|  # 制表符(TAB)的Unicode表示
+        \\u000A|  # 换行符(LF)的Unicode表示
+        \\u000C|  # 换页符(FF)的Unicode表示
+        \\u000D|  # 回车符(CR)的Unicode表示
+        \\u0022|  # 双引号的Unicode表示
+        \\u0027|  # 单引号的Unicode表示
+        \\u005C|  # 反斜杠的Unicode表示
+        \\010|    # 换行符(LF)的八进制表示
+        \\011|    # 制表符(TAB)的八进制表示
+        \\012|    # 换页符(FF)的八进制表示
+        \\014|    # 反斜杠的八进制表示
+        \\015|    # 回车符(CR)的八进制表示
+        \\042|    # 双引号的八进制表示
+        \\047|    # 单引号的八进制表示
+        \\134     # 反斜杠的八进制表示
+    "/>
+            <property name="message" value="建议使用标准转义序列（如\n、\t）代替八进制/Unicode转义。"/>
         </module>
         <module name="AvoidEscapedUnicodeCharacters">
             <property name="allowEscapesForControlCharacters" value="true"/>
@@ -371,7 +385,7 @@
         <!-- https://checkstyle.org/config_filters.html#SuppressionXpathFilter -->
         <module name="SuppressionXpathFilter">
             <property name="file" value="${org.checkstyle.google.suppressionxpathfilter.config}"
-                      default="checkstyle-xpath-suppressions.xml" />
+                      default="checkstyle-xpath-suppressions.xml"/>
             <property name="optional" value="true"/>
         </module>
     </module>

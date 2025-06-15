@@ -12,19 +12,19 @@ import com.cc.protocal.resp.Resp;
  **/
 
 public class Rpop implements Command {
-    @Override
-    public CMDTypeEnum getCommand() {
-        return null;
-    }
+  @Override
+  public CMDTypeEnum getCommand() {
+    return null;
+  }
 
-    @Override
-    public Command setContext(Resp[] content) {
-        return null;
-    }
+  @Override
+  public Command setContext(Resp[] content) {
+    return null;
+  }
 
-    @Override
-    public Resp handle() {
-        return null;
-    }
+  @Override
+  public Resp handle() {
+    return null;
+  }
 
 }

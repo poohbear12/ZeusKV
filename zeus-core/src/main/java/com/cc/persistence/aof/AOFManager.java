@@ -2,7 +2,6 @@ package com.cc.persistence.aof;
 
 
 import com.cc.config.entity.AofConfig;
-import com.cc.config.entity.ZeusConfig;
 import com.cc.database.core.RedisCore;
 import com.cc.persistence.aof.loader.AOFLoader;
 import com.cc.persistence.aof.writer.AOFBatchWriter;
@@ -11,15 +10,12 @@ import com.cc.persistence.aof.writer.Writer;
 import com.cc.protocal.resp.RArrays;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * @program: zeus-kv
@@ -31,119 +27,115 @@ import java.nio.file.Files;
 @Setter
 public class AOFManager {
 
-    /**
-     * 文件名
-     */
-    private final String fileName;
+  /**
+   * 预分配文件大小 如未设置则不分配
+   */
+  private static final int DEFAULT_PREALLOCATE_SIZE = 1 * 1024 * 1024;
+  /**
+   * 文件名
+   */
+  private final String fileName;
+  /**
+   * 文件写入器
+   */
+  private final Writer aofWriter;
+  /**
+   * 文件批量写入器
+   */
+  private final AOFBatchWriter aofBatchWriter;
+  /**
+   * 刷盘间隔 MS
+   */
+  private int flushInterval;
 
-    /**
-     * 文件写入器
-     */
-    private final Writer aofWriter;
+  /**
+   * Redis core
+   */
+  private RedisCore redisCore;
 
-    /**
-     * 文件批量写入器
-     */
-    private final AOFBatchWriter aofBatchWriter;
+  private RandomAccessFile raf;
 
-    /**
-     * 预分配文件大小 如未设置则不分配
-     */
-    private static final int DEFAULT_PREALLOCATE_SIZE = 1 * 1024 * 1024;
-
-    /**
-     * 刷盘间隔 MS
-     */
-    private int flushInterval;
-
-    /**
-     * Redis core
-     */
-    private RedisCore redisCore;
-
-    private RandomAccessFile raf;
-
-    private FileChannel channel;
+  private FileChannel channel;
 
 
-    public AOFManager(String fileName, int flushInterval, RedisCore redisCore) throws IOException {
-        this.redisCore = redisCore;
-        this.fileName = fileName;
-        restoreAOF();
-        this.flushInterval = flushInterval;
-        this.aofWriter = new AOFWriter(channel);
-        this.aofBatchWriter = new AOFBatchWriter(aofWriter,flushInterval);
+  public AOFManager(String fileName, int flushInterval, RedisCore redisCore) throws IOException {
+    this.redisCore = redisCore;
+    this.fileName = fileName;
+    restoreAOF();
+    this.flushInterval = flushInterval;
+    this.aofWriter = new AOFWriter(channel);
+    this.aofBatchWriter = new AOFBatchWriter(aofWriter, flushInterval);
+  }
+
+  public AOFManager(AofConfig config, RedisCore redisCore) throws IOException {
+    this(config.getFilename(), config.getFlushInterval(), redisCore);
+  }
+
+
+  public AOFManager(String fileName, int flushInterval) throws IOException {
+    this.fileName = fileName;
+    restoreAOF();
+    this.flushInterval = flushInterval;
+    this.aofWriter = new AOFWriter(channel);
+    this.aofBatchWriter = new AOFBatchWriter(aofWriter, flushInterval);
+  }
+
+  private void restoreAOF() throws IOException {
+    File file = new File(fileName);
+    this.raf = new RandomAccessFile(file, "rw");
+    this.channel = raf.getChannel();
+    if (file.exists() && file.length() > 0) {
+      // todo AOF执行恢复工作
+      AOFLoader.loaderAOF(channel, redisCore);
+    } else {
+      // 预分配
+      preallocate();
     }
+  }
 
-    public AOFManager(AofConfig config, RedisCore redisCore) throws IOException {
-        this(config.getFilename(),config.getFlushInterval(),redisCore);
+  private void preallocate() throws IOException {
+    if (this.raf != null) {
+      this.raf.setLength(DEFAULT_PREALLOCATE_SIZE);
+      this.channel.position(0);
     }
+  }
 
+  /**
+   * 将指令追加进入AOF日志
+   *
+   * @param cmd
+   * @throws IOException
+   */
+  public void append(RArrays cmd) throws IOException {
+    ByteBuf buffer = Unpooled.buffer();
+    cmd.encode(buffer);
+    aofBatchWriter.write(buffer);
+  }
 
-
-    private void restoreAOF() throws IOException {
-        File file = new File(fileName);
-        this.raf = new RandomAccessFile(file,"rw");
-        this.channel = raf.getChannel();
-        if (file.exists() && file.length() > 0) {
-            // todo AOF执行恢复工作
-            AOFLoader.loaderAOF(channel,redisCore);
-        } else {
-            // 预分配
-            preallocate();
-        }
+  /**
+   * 关闭
+   *
+   * @throws IOException
+   */
+  public void close() throws IOException {
+    if (aofBatchWriter != null) {
+      aofBatchWriter.close();
     }
-
-    private void preallocate() throws IOException {
-        if (this.raf != null) {
-            this.raf.setLength(DEFAULT_PREALLOCATE_SIZE);
-            this.channel.position(0);
-        }
+    if (aofBatchWriter != null) {
+      aofBatchWriter.close();
     }
+  }
 
-
-    public AOFManager(String fileName,int flushInterval) throws IOException {
-        this.fileName = fileName;
-        restoreAOF();
-        this.flushInterval = flushInterval;
-        this.aofWriter = new AOFWriter(channel);
-        this.aofBatchWriter = new AOFBatchWriter(aofWriter,flushInterval);
+  /**
+   * 启动
+   *
+   * @throws IOException
+   */
+  public void flush() throws IOException {
+    if (aofBatchWriter != null) {
+      aofBatchWriter.flush();
     }
-
-    /**
-     * 将指令追加进入AOF日志
-     * @param cmd
-     * @throws IOException
-     */
-    public void append(RArrays cmd) throws IOException {
-        ByteBuf buffer = Unpooled.buffer();
-        cmd.encode(buffer);
-        aofBatchWriter.write(buffer);
-    }
-
-    /**
-     * 关闭
-     * @throws IOException
-     */
-    public void close() throws IOException {
-        if (aofBatchWriter != null) {
-            aofBatchWriter.close();
-        }
-        if (aofBatchWriter != null) {
-            aofBatchWriter.close();
-        }
-    }
-
-    /**
-     * 启动
-     * @throws IOException
-     */
-    public void flush() throws IOException {
-        if (aofBatchWriter != null) {
-            aofBatchWriter.flush();
-        }
-    }
-
+  }
 
 
 }

@@ -13,28 +13,28 @@ import com.cc.database.datastructure.RedisString;
  **/
 public class RedisDb {
 
-    /**
-     * 字典
-     */
-    private final Dict<RedisString, RedisObject> dict;
+  /**
+   * 字典
+   */
+  private final Dict<RedisString, RedisObject> dict;
 
-    public RedisDb() {
-        this.dict = new Dict();
-    }
+  public RedisDb() {
+    this.dict = new Dict();
+  }
 
-    public void put(RedisString key, RedisObject value) {
-        dict.put(key,value);
-    }
+  public void put(RedisString key, RedisObject value) {
+    dict.put(key, value);
+  }
 
-    public RedisObject get(RedisString key) {
-        return dict.get(key);
-    }
+  public RedisObject get(RedisString key) {
+    return dict.get(key);
+  }
 
-    public boolean exists(String key) {
-        return dict.exists(key);
-    }
+  public boolean exists(String key) {
+    return dict.exists(key);
+  }
 
-    public int keySize() {
-        return dict.size();
-    }
+  public int keySize() {
+    return dict.size();
+  }
 }

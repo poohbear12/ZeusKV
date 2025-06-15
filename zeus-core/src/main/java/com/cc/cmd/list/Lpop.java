@@ -20,28 +20,29 @@ import com.cc.protocal.resp.Resp;
 public class Lpop extends AbstractCommand {
 
 
-    @Override
-    public CMDTypeEnum getCommand() {
-        return CMDTypeEnum.LPOP;
-    }
+  public Lpop(RedisCore redisCore) {
+    super(redisCore);
+  }
 
-    @Override
-    public Resp handle() {
-        try {
-            RedisList<RedisString> list = handlerArgs();
-            RedisString redisObject = list.lPop();
-            return new RSimpleStrings(redisObject.getValue());
-        } catch (RuntimeException e) {
-            return new RErrors("Lpop: 指令异常");
-        }
-    }
+  @Override
+  public CMDTypeEnum getCommand() {
+    return CMDTypeEnum.LPOP;
+  }
 
-    private RedisList<RedisString> handlerArgs() {
-        RedisString key = RedisString.Instance().setValue(content[0]);
-        return (RedisList<RedisString>) redisCore.get(key);
+  @Override
+  public Resp handle() {
+    try {
+      RedisList<RedisString> list = handlerArgs();
+      RedisString redisObject = list.lPop();
+      return new RSimpleStrings(redisObject.getValue());
+    } catch (RuntimeException e) {
+      return new RErrors("Lpop: 指令异常");
+    }
+  }
 
-    }
-    public Lpop(RedisCore redisCore) {
-        super(redisCore);
-    }
+  private RedisList<RedisString> handlerArgs() {
+    RedisString key = RedisString.Instance().setValue(content[0]);
+    return (RedisList<RedisString>) redisCore.get(key);
+
+  }
 }

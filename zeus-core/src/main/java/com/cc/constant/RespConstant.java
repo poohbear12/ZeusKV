@@ -8,5 +8,5 @@ package com.cc.constant;
  **/
 
 public class RespConstant {
-    public static final byte[] CRLF = "\r\n".getBytes();
+  public static final byte[] CRLF = "\r\n".getBytes();
 }

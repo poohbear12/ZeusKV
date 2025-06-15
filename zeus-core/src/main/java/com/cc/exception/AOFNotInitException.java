@@ -1,7 +1,5 @@
 package com.cc.exception;
 
-import com.cc.persistence.aof.AOFManager;
-
 /**
  * @program: zeus-kv
  * @description:
@@ -10,12 +8,12 @@ import com.cc.persistence.aof.AOFManager;
  **/
 
 
-public class AOFNotInitException extends BusinessException{
-    public AOFNotInitException(String requestId, String errorCode, String message) {
-        super(requestId, errorCode, message);
-    }
+public class AOFNotInitException extends BusinessException {
+  public AOFNotInitException(String requestId, String errorCode, String message) {
+    super(requestId, errorCode, message);
+  }
 
-    public AOFNotInitException() {
-        super("默认","1","AOF管理器未初始化!");
-    }
+  public AOFNotInitException() {
+    super("默认", "1", "AOF管理器未初始化!");
+  }
 }

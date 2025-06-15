@@ -10,17 +10,18 @@ import io.netty.buffer.ByteBuf;
  **/
 
 public interface Resp {
-    /**
-     * 解码
-     * @param buffer
-     * @return
-     */
-    Resp decode(ByteBuf buffer);
+  /**
+   * 解码
+   *
+   * @param buffer
+   * @return
+   */
+  Resp decode(ByteBuf buffer);
 
-    /**
-     * 编码
-     * @param buffer
-     *
-     */
-    void encode(ByteBuf buffer);
+  /**
+   * 编码
+   *
+   * @param buffer
+   */
+  void encode(ByteBuf buffer);
 }

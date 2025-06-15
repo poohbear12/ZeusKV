@@ -10,26 +10,24 @@ package com.cc.common.enmu;
 
 public enum CMDExceptionEnum {
 
-    /**
-     * common通用异常,非特指
-     */
-    commandError("命令异常!",-1),
+  /**
+   * common通用异常,非特指
+   */
+  commandError("命令异常!", -1),
 
-    shortError("命令过短!",1),
+  shortError("命令过短!", 1),
 
-    typeError("非redis指令!",2),
+  typeError("非redis指令!", 2),
 
-    missingTerminatorError("命令缺少终止符!",3);
-
-
+  missingTerminatorError("命令缺少终止符!", 3);
 
 
-    private String name;
+  private String name;
 
-    private int code;
+  private int code;
 
-    CMDExceptionEnum(String name, int code) {
-        this.name = name;
-        this.code = code;
-    }
+  CMDExceptionEnum(String name, int code) {
+    this.name = name;
+    this.code = code;
+  }
 }

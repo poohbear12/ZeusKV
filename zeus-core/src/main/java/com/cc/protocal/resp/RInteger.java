@@ -3,7 +3,6 @@ package com.cc.protocal.resp;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
@@ -16,20 +15,20 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RInteger extends AbstracResp{
+public class RInteger extends AbstracResp {
 
-    private int content;
+  private int content;
 
-    @Override
-    protected Resp absDecode(ByteBuf buffer) {
-        this.content = getNumber(buffer);
-        return this;
-    }
+  @Override
+  protected Resp absDecode(ByteBuf buffer) {
+    this.content = getNumber(buffer);
+    return this;
+  }
 
-    @Override
-    protected void absEncode(ByteBuf buffer) {
-        buffer.writeByte(':');
-        buffer.writeBytes(String.valueOf(this.content).getBytes());
-        buffer.writeBytes(CRLF);
-    }
+  @Override
+  protected void absEncode(ByteBuf buffer) {
+    buffer.writeByte(':');
+    buffer.writeBytes(String.valueOf(this.content).getBytes());
+    buffer.writeBytes(CRLF);
+  }
 }

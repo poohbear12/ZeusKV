@@ -11,43 +11,43 @@ import lombok.Data;
 
 @Data
 public class NodeConfig {
-    /**
-     * 节点名称 zeus_one
-     */
-    private String name;
+  /**
+   * 节点名称 zeus_one
+   */
+  private String name;
 
-    /**
-     * 节点IP地址 127.0.0.1
-     */
-    private String addr;
+  /**
+   * 节点IP地址 127.0.0.1
+   */
+  private String addr;
 
-    /**
-     * 节点端口地址 6379
-     */
-    private int port;
+  /**
+   * 节点端口地址 6379
+   */
+  private int port;
 
-    /**
-     * 正常类型 normal / Master / Slave / Lost
-     */
-    private NodeType type;
+  /**
+   * 正常类型 normal / Master / Slave / Lost
+   */
+  private NodeType type;
 
-    /**
-     * 集群ID xx
-     */
-    private int clusterId;
+  /**
+   * 集群ID xx
+   */
+  private int clusterId;
 
-    /**
-     * 心跳检测间隔时间 1000ms
-     */
-    private int heartbeatInterval;
+  /**
+   * 心跳检测间隔时间 1000ms
+   */
+  private int heartbeatInterval;
 
-    /**
-     * 故障检测超时时间 1000ms
-     */
-    private int failureDetectionTimeout;
+  /**
+   * 故障检测超时时间 1000ms
+   */
+  private int failureDetectionTimeout;
 
-    /**
-     * 最大连接数 10
-     */
-    private int maxConnections;
+  /**
+   * 最大连接数 10
+   */
+  private int maxConnections;
 }

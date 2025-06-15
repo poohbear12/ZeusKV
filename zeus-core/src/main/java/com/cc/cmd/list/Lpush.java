@@ -4,7 +4,6 @@ import com.cc.cmd.AbstractCommand;
 import com.cc.common.enmu.CMDTypeEnum;
 import com.cc.database.core.RedisCore;
 import com.cc.database.datastructure.RedisList;
-import com.cc.database.datastructure.RedisObject;
 import com.cc.database.datastructure.RedisString;
 import com.cc.protocal.resp.RErrors;
 import com.cc.protocal.resp.RSimpleStrings;
@@ -20,33 +19,33 @@ import java.util.List;
  **/
 public class Lpush extends AbstractCommand {
 
-    public Lpush(RedisCore redisCore) {
-        super(redisCore);
-    }
+  public Lpush(RedisCore redisCore) {
+    super(redisCore);
+  }
 
-    @Override
-    public CMDTypeEnum getCommand() {
-        return null;
-    }
+  @Override
+  public CMDTypeEnum getCommand() {
+    return null;
+  }
 
-    @Override
-    public Resp handle() {
-        if (content.length < 2) {
-            return new RErrors("指令过短!");
-        }
-        int count = handlerArgs();
-        return new RSimpleStrings(String.valueOf(count));
+  @Override
+  public Resp handle() {
+    if (content.length < 2) {
+      return new RErrors("指令过短!");
     }
+    int count = handlerArgs();
+    return new RSimpleStrings(String.valueOf(count));
+  }
 
-    private int handlerArgs() {
-        RedisString key = RedisString.Instance().setValue(content[0]);
-        List<RedisString> list = new ArrayList<>();
-        for (int i = 1; i < content.length; i++) {
-            list.addFirst(RedisString.Instance().setValue(content[i]));
-        }
-        RedisList<RedisString> values = RedisList.Instance();
-        values.lPush(list);
-        redisCore.put(key,values);
-        return content.length - 1;
+  private int handlerArgs() {
+    RedisString key = RedisString.Instance().setValue(content[0]);
+    List<RedisString> list = new ArrayList<>();
+    for (int i = 1; i < content.length; i++) {
+      list.addFirst(RedisString.Instance().setValue(content[i]));
     }
+    RedisList<RedisString> values = RedisList.Instance();
+    values.lPush(list);
+    redisCore.put(key, values);
+    return content.length - 1;
+  }
 }

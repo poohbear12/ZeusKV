@@ -17,32 +17,32 @@ import com.cc.protocal.resp.Resp;
 
 public class Get extends AbstractCommand {
 
-    public Get(RedisCore redisCore) {
-        super(redisCore);
+  public Get(RedisCore redisCore) {
+    super(redisCore);
+  }
+
+
+  @Override
+  public CMDTypeEnum getCommand() {
+    return CMDTypeEnum.GET;
+  }
+
+
+  // todo 逻辑未优化
+  @Override
+  public Resp handle() {
+    try {
+      RedisString value = handlerArgs();
+      return new RSimpleStrings(value.getValue());
+    } catch (Exception e) {
+      return new RErrors("key不存在!");
     }
 
+  }
 
-    @Override
-    public CMDTypeEnum getCommand() {
-        return CMDTypeEnum.GET;
-    }
-
-
-    // todo 逻辑未优化
-    @Override
-    public Resp handle() {
-        try {
-            RedisString value = handlerArgs();
-            return new RSimpleStrings(value.getValue());
-        } catch (Exception e) {
-            return new RErrors("key不存在!");
-        }
-
-    }
-
-    private RedisString handlerArgs() {
-        RedisString key = RedisString.Instance().setValue(content[0]);
-        return (RedisString) redisCore.get(key);
-    }
+  private RedisString handlerArgs() {
+    RedisString key = RedisString.Instance().setValue(content[0]);
+    return (RedisString) redisCore.get(key);
+  }
 
 }
