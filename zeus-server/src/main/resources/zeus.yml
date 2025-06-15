@@ -9,7 +9,7 @@ nodes:
     max-connections: 10 # 最大连接数
 
 aof:
-  enable: false # 是否开启
+  enable: true # 是否开启
   filename: zeus.aof # 文件名
   preallocate-size: 1048576 # 文件预分配大小 1 * 1024 * 1024 1MB
   flush-interval: 1000 # 刷盘间隔 单位 MS

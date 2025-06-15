@@ -16,6 +16,7 @@
         <module>zeus-server</module>
         <module>zeus-client</module>
         <module>zeus-common</module>
+        <module>provingground</module>
     </modules>
 
     <properties>
