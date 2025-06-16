@@ -24,4 +24,8 @@ public class TList<T> {
     }
     return list.removeFirst();
   }
+
+  public int size() {
+    return list.size();
+  }
 }

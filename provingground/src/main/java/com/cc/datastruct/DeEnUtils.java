@@ -16,7 +16,9 @@ import java.util.LinkedList;
 
 
 public class DeEnUtils {
-
+  {
+    System.out.println("hello");
+  }
   // 编码方法：将对象序列化为字节数组
   // 编码方法：将对象序列化为字节数组
   public static <T> byte[] encode(T object, Class<T> clazz) {
@@ -67,17 +69,31 @@ public class DeEnUtils {
 
   public static void main(String[] args) {
     // 测试 KVByte 类
-    KVByte kvByte = new KVByte();
-    kvByte.setKey("testKey");
-    kvByte.setValue(new byte[]{1, 2, 3});
-
-    // 编码
-    byte[] encodedBytes = DeEnUtils.encode(kvByte, KVByte.class);
-    System.out.println("Encoded bytes length: " + encodedBytes.length);
-
-    // 解码
-    KVByte decodedKVByte = DeEnUtils.decode(encodedBytes, KVByte.class);
-    System.out.println("Decoded key: " + decodedKVByte.getKey());
-    System.out.println("Decoded value: " + java.util.Arrays.toString(decodedKVByte.getValue()));
+//    KVByte kvByte = new KVByte();
+//    kvByte.setKey("testKey");
+//    kvByte.setValue(new byte[]{1, 2, 3});
+//
+//    // 编码
+//    byte[] encodedBytes = DeEnUtils.encode(kvByte, KVByte.class);
+//    System.out.println("Encoded bytes length: " + encodedBytes.length);
+//
+//    // 解码
+//    KVByte decodedKVByte = DeEnUtils.decode(encodedBytes, KVByte.class);
+//    System.out.println("Decoded key: " + decodedKVByte.getKey());
+//    System.out.println("Decoded value: " + java.util.Arrays.toString(decodedKVByte.getValue()));
+//
+//    TList<Integer> integerTList = new TList<>();
+//    integerTList.lpush(1);
+//    integerTList.lpush(2);
+//    integerTList.lpush(3);
+//    byte[] encode = DeEnUtils.encode(integerTList, TList.class);
+//    KVByte kvByte1 = new KVByte();
+//    kvByte1.setKey("hello");
+//    kvByte1.setValue(encode);
+//    System.out.println("encode value长度：" + encode.length);
+//    TList decode = DeEnUtils.decode(kvByte.getValue(), TList.class);
+//    decode.lpush(5);
+//    kvByte1.setValue(DeEnUtils.encode(decode,TList.class));
+//    System.out.println("encode value长度：" + kvByte1.getValue().length);
   }
 }
