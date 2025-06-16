@@ -5,6 +5,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.LinkedList;
 
 /**
  * @program: zeus-kv
@@ -23,11 +24,10 @@ public class DeEnUtils {
     Kryo kryo = new Kryo();
     // 注册要序列化的类
     kryo.register(clazz);
-
+    kryo.register(TList.class);
+    kryo.register(LinkedList.class);
     // 如果类中有特殊字段类型，也需要注册
-    if (clazz == KVByte.class) {
       kryo.register(byte[].class);
-    }
 
     // 使用 ByteArrayOutputStream 来存储序列化后的字节数据
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -47,11 +47,11 @@ public class DeEnUtils {
     Kryo kryo = new Kryo();
     // 注册要反序列化的类
     kryo.register(clazz);
+    kryo.register(TList.class);
+    kryo.register(LinkedList.class);
 
     // 如果类中有特殊字段类型，也需要注册
-    if (clazz == KVByte.class) {
       kryo.register(byte[].class);
-    }
 
     // 使用 ByteArrayInputStream 来读取字节数组
     ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
