@@ -10,7 +10,11 @@ import lombok.Data;
  **/
 @Data
 public class KVBytes {
+
   private byte[] key;
 
   private byte[] value;
+
+  public static void main(String[] args) {
+  }
 }
