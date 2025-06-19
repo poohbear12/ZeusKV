@@ -1,5 +1,10 @@
 package com.cc.hash;
 
+import com.cc.datastruct.DeEnUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @program: zeus-kv
  * @description:
@@ -8,17 +13,8 @@ package com.cc.hash;
  **/
 
 
-public class ZeusList implements ZeusData{
+public class ZeusList<T> implements ZeusData{
 
-  @Override
-  public ZeusData decode(byte[] bytes) {
-    // byte
-    return new ZeusList();
-  }
+  private List<T> list = new ArrayList<>();
 
-  @Override
-
-  public byte[] encode() {
-    return new byte[0];
-  }
 }

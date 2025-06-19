@@ -54,23 +54,24 @@ public class MurMap {
     entries[index % INITIAL_CAPACITY] = entry;
   }
 
+  /**
+   * 通过String类型的Key获取Value 返回byte[]
+   * @param key
+   * @return
+   */
+  public byte[] get(String key) {
+    return null;
+  }
+
   public void put(String key, ZeusData zeusData) {
-    byte[] encode = zeusData.encode();
 
   }
 
 
-
-  public String get(String key) {
-    int index = hash(key.getBytes(StandardCharsets.UTF_8));
-    return new String(entries[index % INITIAL_CAPACITY].getValue(),StandardCharsets.UTF_8);
-  }
 
   public static void main(String[] args) {
-    MurMap murMap = new MurMap();
-    murMap.put("name", "xiong");
-    System.out.println(murMap.get("name"));
   }
+
 
   private int hashIndex(byte[] key) {
     return key == null ? 0 : (hash(key) & 0x7FFFFFFF) & (entries.length - 1);

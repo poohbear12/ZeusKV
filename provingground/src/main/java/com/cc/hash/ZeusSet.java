@@ -4,8 +4,9 @@ package com.cc.hash;
  * @program: zeus-kv
  * @description:
  * @author: ccstar
- * @create: 2025-06-18  23:55
+ * @create: 2025-06-19  23:20
  **/
 
-public interface ZeusData {
+
+public class ZeusSet implements ZeusData{
 }

@@ -1,99 +1,96 @@
 package com.cc.datastruct;
 
+
+import com.cc.hash.ZeusData;
+import com.cc.hash.ZeusList;
+import com.cc.hash.ZeusSet;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.LinkedList;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @program: zeus-kv
- * @description:
+ * @description: 基于kryo编解码工具类
  * @author: ccstar
  * @create: 2025-06-15  23:31
  **/
 
 
 public class DeEnUtils {
-  {
-    System.out.println("hello");
+
+  private static Kryo kryo;
+
+  static {
+    kryo = new Kryo();
+    kryo.register(ZeusList.class);
+    kryo.register(ZeusSet.class);
+    kryo.register(ArrayList.class);
   }
-  // 编码方法：将对象序列化为字节数组
-  // 编码方法：将对象序列化为字节数组
+  /**
+   * 编码方法：将对象序列化为字节数组
+   * @param object 要序列化的对象
+   * @param clazz 对象的类类型
+   * @param <T> 对象的泛型类型
+   * @return 序列化后的字节数组
+   */
   public static <T> byte[] encode(T object, Class<T> clazz) {
-    // 创建 Kryo 实例
-    Kryo kryo = new Kryo();
-    // 注册要序列化的类
-    kryo.register(clazz);
-    kryo.register(TList.class);
-    kryo.register(LinkedList.class);
-    // 如果类中有特殊字段类型，也需要注册
-      kryo.register(byte[].class);
+    // 从线程本地获取 Kryo 实例
 
     // 使用 ByteArrayOutputStream 来存储序列化后的字节数据
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    Output output = new Output(byteArrayOutputStream);
+    // todo 使用反射扫描实现自动注册
+    try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+         Output output = new Output(byteArrayOutputStream)) {
 
-    // 序列化对象
-    kryo.writeObject(output, object);
-    output.close();
+      // 序列化对象
+      kryo.writeObject(output, object);
+      output.flush();
 
-    // 返回字节数组
-    return byteArrayOutputStream.toByteArray();
+      // 返回字节数组
+      return byteArrayOutputStream.toByteArray();
+    } catch (Exception e) {
+      throw new RuntimeException("序列化对象失败", e);
+    }
   }
 
-  // 解码方法：将字节数组反序列化为对象
+  /**
+   * 解码方法：将字节数组反序列化为对象
+   * @param bytes 要反序列化的字节数组
+   * @param clazz 对象的类类型
+   * @param <T> 对象的泛型类型
+   * @return 反序列化后的对象
+   */
   public static <T> T decode(byte[] bytes, Class<T> clazz) {
-    // 创建 Kryo 实例
-    Kryo kryo = new Kryo();
-    // 注册要反序列化的类
-    kryo.register(clazz);
-    kryo.register(TList.class);
-    kryo.register(LinkedList.class);
+    if (bytes == null || bytes.length == 0) {
+      return null;
+    }
 
-    // 如果类中有特殊字段类型，也需要注册
-      kryo.register(byte[].class);
+    // 从线程本地获取 Kryo 实例
 
     // 使用 ByteArrayInputStream 来读取字节数组
-    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
-    Input input = new Input(byteArrayInputStream);
+    try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+         Input input = new Input(byteArrayInputStream)) {
 
-    // 反序列化对象
-    T object = kryo.readObject(input, clazz);
-    input.close();
-
-    // 返回反序列化后的对象
-    return object;
+      // 反序列化对象
+      return kryo.readObject(input, clazz);
+    } catch (Exception e) {
+      throw new RuntimeException("反序列化对象失败", e);
+    }
   }
 
+
+
   public static void main(String[] args) {
-    // 测试 KVByte 类
-//    KVByte kvByte = new KVByte();
-//    kvByte.setKey("testKey");
-//    kvByte.setValue(new byte[]{1, 2, 3});
-//
-//    // 编码
-//    byte[] encodedBytes = DeEnUtils.encode(kvByte, KVByte.class);
-//    System.out.println("Encoded bytes length: " + encodedBytes.length);
-//
-//    // 解码
-//    KVByte decodedKVByte = DeEnUtils.decode(encodedBytes, KVByte.class);
-//    System.out.println("Decoded key: " + decodedKVByte.getKey());
-//    System.out.println("Decoded value: " + java.util.Arrays.toString(decodedKVByte.getValue()));
-//
-//    TList<Integer> integerTList = new TList<>();
-//    integerTList.lpush(1);
-//    integerTList.lpush(2);
-//    integerTList.lpush(3);
-//    byte[] encode = DeEnUtils.encode(integerTList, TList.class);
-//    KVByte kvByte1 = new KVByte();
-//    kvByte1.setKey("hello");
-//    kvByte1.setValue(encode);
-//    System.out.println("encode value长度：" + encode.length);
-//    TList decode = DeEnUtils.decode(kvByte.getValue(), TList.class);
-//    decode.lpush(5);
-//    kvByte1.setValue(DeEnUtils.encode(decode,TList.class));
-//    System.out.println("encode value长度：" + kvByte1.getValue().length);
+    ZeusList<Integer> objectZeusList = new ZeusList<>();
+    byte[] encode = DeEnUtils.encode(objectZeusList, ZeusList.class);
+    ZeusList decode = DeEnUtils.decode(encode, ZeusList.class);
+    ZeusSet zeusSet = new ZeusSet();
+    byte[] encode1 = DeEnUtils.encode(zeusSet, ZeusSet.class);
+    ZeusSet decode1 = DeEnUtils.decode(encode1, ZeusSet.class);
+
+
   }
 }
