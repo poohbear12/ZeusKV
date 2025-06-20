@@ -1,20 +1,36 @@
 package com.cc.hash;
 
-import com.cc.datastruct.DeEnUtils;
-
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
  * @program: zeus-kv
- * @description:
+ * @description: List 双向列表
  * @author: ccstar
  * @create: 2025-06-18  23:55
  **/
 
-
 public class ZeusList<T> implements ZeusData{
+  private List<T> innrList = new LinkedList<>();
 
-  private List<T> list = new ArrayList<>();
+  public void lpush(T t) {
+    innrList.addFirst(t);
+  }
+
+  public T lpop() {
+    return innrList.removeFirst();
+  }
+  public void rpush(T t) {
+    innrList.addLast(t);
+  }
+
+  public T rpop() {
+    return innrList.removeLast();
+  }
+
+  public int size() {
+    return innrList.size();
+  }
+
 
 }

@@ -8,7 +8,7 @@ import lombok.Setter;
 
 /**
  * @program: zeus-kv
- * @description: 基于murmur3 哈希表
+ * @description: 基于Murmur3 哈希表
  * @author: ccstar
  * @create: 2025-06-17  01:07
  **/
