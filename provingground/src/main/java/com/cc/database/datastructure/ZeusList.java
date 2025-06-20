@@ -1,5 +1,6 @@
-package com.cc.hash;
+package com.cc.database.datastructure;
 
+import com.cc.hash.ZeusData;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,8 +11,8 @@ import java.util.List;
  * @create: 2025-06-18  23:55
  **/
 
-public class ZeusList<T> implements ZeusData{
-  private List<T> innrList = new LinkedList<>();
+public class ZeusList<T> implements ZeusData {
+  private final List<T> innrList = new LinkedList<>();
 
   public void lpush(T t) {
     innrList.addFirst(t);
@@ -20,6 +21,7 @@ public class ZeusList<T> implements ZeusData{
   public T lpop() {
     return innrList.removeFirst();
   }
+
   public void rpush(T t) {
     innrList.addLast(t);
   }

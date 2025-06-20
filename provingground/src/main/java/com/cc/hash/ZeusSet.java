@@ -8,5 +8,5 @@ package com.cc.hash;
  **/
 
 
-public class ZeusSet implements ZeusData{
+public class ZeusSet implements ZeusData {
 }
