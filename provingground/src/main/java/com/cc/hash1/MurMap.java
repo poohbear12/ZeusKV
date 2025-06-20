@@ -37,6 +37,7 @@ public class MurMap {
    */
   private AtomicInteger length;
 
+  private static int MAX_CAPACITY;
 
   public MurMap() {
     this(INITIAL_CAPACITY);
@@ -44,27 +45,29 @@ public class MurMap {
 
   public MurMap(int capacity) {
     this.entries = new Entry[capacity];
+    MAX_CAPACITY = capacity;
     length = new AtomicInteger(0);
   }
 
-//  /**
-//   * 通过String类型的Key获取Value 返回byte[]
-//   *
-//   * @param key
-//   * @return
-//   */
-//  public byte[] get(String key) {
-//    byte[] keyb = encode(key, String.class);
-//    int index = hashIndex(keyb);
-//    return entries[index].getValue();
-//  }
-//
-//  public void put(String key, ZeusData zeusData) {
-//    byte[] keyb = encode(key, String.class);
-//    int index = hashIndex(keyb);
-//    entries[index] = new Entry(keyb, encode(zeusData, ZeusData.class));
-//  }
-
+  /**
+   * todo 后续进行优化逻辑
+   * @param key
+   * @return
+   */
+  public byte[] get(byte[] key) {
+    int hashCode = hash(key);
+    int index = hashcodeToIndex(hashCode);
+    if (entries[index] != null) {
+      Entry current = entries[index];
+      while (current != null) {
+        if (current.getHashCode() == hashCode) {
+          return current.getValue();
+        }
+        current = current.next;
+      }
+    }
+    return new byte[0];
+  }
 
   /**
    * todo 后续需要进行较大修改
@@ -74,19 +77,45 @@ public class MurMap {
    * @param value
    */
   public void put(byte[] key, byte[] value) {
-    int index = hashIndex(key);
-    entries[index] = new Entry(key, value);
-    length.getAndIncrement();
+    int hashCode = hash(key);
+    int index = hashcodeToIndex(hashCode);
+    // 1. 判断当前位置是否为空
+    if (entries[index] == null) {
+      entries[index] = new Entry(key, value, hashCode);
+      length.getAndIncrement();
+    } else {
+      // 2. 不为空
+      Entry current = entries[index];
+      // 2.1 flag判断是否修改标志位
+      boolean flag = false;
+      // 3. 判断链表下一个节点是否为空
+      while (current.next != null) {
+        // 4. 判断链表节点中hash值是否相同
+        if (current.getHashCode() == hashCode) {
+          current.setValue(value);
+          flag = true;
+          break;
+        }
+        current = current.next;
+      }
+      // 5. 如果未被修改则进入
+      if (!flag) {
+        if (current.getHashCode() == hashCode) {
+          current.setValue(value);
+        } else {
+          current.setNext(new Entry(key, value, hashCode));
+        }
+      }
+    }
   }
 
   /**
-   * todo 后续进行优化逻辑
-   * @param key
+   * 根据hash值计算数组下标
+   * @param hashCode
    * @return
    */
-  public byte[] get(byte[] key) {
-    int index = hashIndex(key);
-    return entries[index].getValue();
+  private int hashcodeToIndex(int hashCode) {
+    return (hashCode & 0x7FFFFFFF) & (MAX_CAPACITY - 1);
   }
 
   /**
@@ -94,8 +123,8 @@ public class MurMap {
    * @param key
    * @return
    */
-  private int hashIndex(byte[] key) {
-    return key == null ? 0 : (hash(key) & 0x7FFFFFFF) & (entries.length - 1);
+  private int hashToIndex(byte[] key) {
+    return key == null ? 0 : (hash(key) & 0x7FFFFFFF) & (MAX_CAPACITY - 1);
   }
 
   /**
@@ -107,7 +136,6 @@ public class MurMap {
   private int hash(byte[] bytes) {
     return Hashing.murmur3_32().hashBytes(bytes).asInt();
   }
-
 
   /**
    * 哈希表节点（内部类）
@@ -135,9 +163,10 @@ public class MurMap {
      */
     private Entry next;
 
-    public Entry(byte[] key, byte[] value) {
+    public Entry(byte[] key, byte[] value, int hashCode) {
       this.key = key;
       this.value = value;
+      this.hashCode = hashCode;
     }
   }
 }

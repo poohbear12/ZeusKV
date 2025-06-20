@@ -179,6 +179,7 @@ public class KryoSerialize {
 
   /**
    * 注册内部类
+   *
    * @param kryo
    */
   private static void registerJdkInternalClasses(Kryo kryo) {
@@ -252,7 +253,7 @@ public class KryoSerialize {
    * 编码方法：将对象序列化为字节数组
    * 1. clazz == Object
    * 2. clazz == Interface
-   * 3. clazz == other
+   * 3. clazz == other throw new
    */
   /**
    * 编码方法：将对象序列化为字节数组
@@ -276,10 +277,9 @@ public class KryoSerialize {
     }
     // 不支持的类型
     else {
-      throw new RuntimeException("不支持的类类型: " + clazz.getName());
+      throw new RuntimeException(STR."不支持的类类型: \{clazz.getName()}");
     }
   }
-
 
   /**
    * 处理具体类的序列化
@@ -444,10 +444,10 @@ public class KryoSerialize {
       }
       // 不支持的类型
       else {
-        throw new RuntimeException("不支持的类类型: " + clazz.getName());
+        throw new RuntimeException(STR."Kryo异常，不支持的类类型: \{clazz.getName()}");
       }
     } catch (Exception e) {
-      throw new RuntimeException("Kryo异常，反序列化对象失败: " + clazz.getName(), e);
+      throw new RuntimeException(STR."Kryo异常，反序列化对象失败: \{clazz.getName()}", e);
     } finally {
       inputPool.free(input);
       kryoPool.free(kryo);
@@ -464,7 +464,7 @@ public class KryoSerialize {
 
     // 确保实现类是接口的实现
     if (!interfaceClass.isAssignableFrom(implClass)) {
-      throw new RuntimeException(implClassName + " 不是 " + interfaceClass.getName() + " 的实现");
+      throw new RuntimeException(STR."\{implClassName} 不是 \{interfaceClass.getName()} 的实现");
     }
 
     // 确保实现类已注册
@@ -484,7 +484,7 @@ public class KryoSerialize {
 
     // 确保子类是抽象类的子类
     if (!abstractClass.isAssignableFrom(subclass)) {
-      throw new RuntimeException(subclassName + " 不是 " + abstractClass.getName() + " 的子类");
+      throw new RuntimeException(STR."\{subclassName} 不是 \{abstractClass.getName()} 的子类");
     }
 
     // 确保子类已注册
