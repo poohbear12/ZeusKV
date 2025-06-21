@@ -1,6 +1,9 @@
 package com.cc.hash1;
 
 import com.google.common.hash.Hashing;
+
+import java.util.Arrays;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,24 +36,71 @@ public class MurMap {
   private final Entry[] entries;
 
   /**
-   * 当前数组长度
+   * 当前数组中元素个数
    */
-  private AtomicInteger length;
+  private final AtomicInteger size;
 
+  /**
+   * 数组最大容量
+   */
   private static int MAX_CAPACITY;
+
+  /**
+   * 存储压力 todo 后续编写计算逻辑
+   */
+  private static float StoragePressure;
+
+//  /**
+//   * Entry池
+//   */
+//  private final ConcurrentLinkedQueue<Entry> entryPool = new ConcurrentLinkedQueue<>();
+//
+//  /**
+//   * 从Entry池获取Entry
+//   * @param key
+//   * @param value
+//   * @param hashCode
+//   * @return
+//   */
+//  private Entry getEntry(byte[] key, byte[] value, int hashCode) {
+//    Entry entry = entryPool.poll();
+//    if (entry == null) {
+//      return new Entry(key, value, hashCode);
+//    }
+//    entry.setKey(key);
+//    entry.setValue(value);
+//    entry.setHashCode(hashCode);
+//    entry.setNext(null);
+//    return entry;
+//  }
+//
+//  /**
+//   * 回收Entry到对象池
+//   * @param entry
+//   */
+//  private void recycleEntry(Entry entry) {
+//    entry.setKey(null);
+//    entry.setValue(null);
+//    entry.setNext(null);
+//    entryPool.offer(entry);
+//  }
 
   public MurMap() {
     this(INITIAL_CAPACITY);
   }
 
+  /**
+   * 指定容量大小构造函数
+   * @param capacity 容量
+   */
   public MurMap(int capacity) {
     this.entries = new Entry[capacity];
     MAX_CAPACITY = capacity;
-    length = new AtomicInteger(0);
+    size = new AtomicInteger(0);
   }
 
   /**
-   * todo 后续进行优化逻辑
+   * todo 后续进行优化逻辑 Arrays.equals 对比 1. 摘要算法 2. 布隆过滤器
    * @param key
    * @return
    */
@@ -60,13 +110,13 @@ public class MurMap {
     if (entries[index] != null) {
       Entry current = entries[index];
       while (current != null) {
-        if (current.getHashCode() == hashCode) {
+        if (current.getHashCode() == hashCode && Arrays.equals(current.getKey(), key)) {
           return current.getValue();
         }
         current = current.next;
       }
     }
-    return new byte[0];
+    return null;
   }
 
   /**
@@ -79,35 +129,78 @@ public class MurMap {
   public void put(byte[] key, byte[] value) {
     int hashCode = hash(key);
     int index = hashcodeToIndex(hashCode);
+
     // 1. 判断当前位置是否为空
     if (entries[index] == null) {
       entries[index] = new Entry(key, value, hashCode);
-      length.getAndIncrement();
+      size.getAndIncrement();
     } else {
-      // 2. 不为空
+      // 2. 不为空，遍历链表查找或插入
       Entry current = entries[index];
-      // 2.1 flag判断是否修改标志位
-      boolean flag = false;
-      // 3. 判断链表下一个节点是否为空
-      while (current.next != null) {
-        // 4. 判断链表节点中hash值是否相同
-        if (current.getHashCode() == hashCode) {
+      Entry prev = null;
+
+      while (current != null) {
+        // 检查哈希值和键内容是否匹配
+        if (current.getHashCode() == hashCode && Arrays.equals(current.getKey(), key)) {
+          // 找到匹配的键，更新值
           current.setValue(value);
-          flag = true;
-          break;
+          return;
         }
-        current = current.next;
+
+        prev = current;
+        current = current.getNext();
       }
-      // 5. 如果未被修改则进入
-      if (!flag) {
-        if (current.getHashCode() == hashCode) {
-          current.setValue(value);
-        } else {
-          current.setNext(new Entry(key, value, hashCode));
-        }
-      }
+
+      // 3. 未找到匹配的键，插入新节点（尾插法）
+      prev.setNext(new Entry(key, value, hashCode));
+      size.getAndIncrement();
     }
   }
+
+  /**
+   * todo 后续需要进行修改
+   * 删除键
+   * @param key
+   */
+  public void remove(byte[] key) {
+    int hashCode = hash(key);
+    int index = hashcodeToIndex(hashCode);
+
+    // 获取头节点并检查是否为空
+    Entry current = entries[index];
+    Entry prev = null;
+
+    // 遍历链表查找匹配的键
+    while (current != null) {
+      // 同时比较哈希值和键内容，避免哈希冲突导致的误删
+      if (current.getHashCode() == hashCode && Arrays.equals(current.getKey(), key)) {
+        // 找到匹配节点，执行删除
+        if (prev == null) {
+          // 删除头节点
+          entries[index] = current.getNext();
+        } else {
+          // 删除中间/尾部节点
+          prev.setNext(current.getNext());
+        }
+        // 可在此处添加对象池回收逻辑
+        size.decrementAndGet();
+        return;
+      }
+
+      // 移动指针
+      prev = current;
+      current = current.getNext();
+    }
+  }
+
+
+  /**
+   * 扩容方法
+   */
+  private void resize() {
+
+  }
+
 
   /**
    * 根据hash值计算数组下标
@@ -120,11 +213,11 @@ public class MurMap {
 
   /**
    * 计算哈希值并返回数组中的位置
-   * @param key
-   * @return
+   * @param key 键
+   * @return 数组下标
    */
   private int hashToIndex(byte[] key) {
-    return key == null ? 0 : (hash(key) & 0x7FFFFFFF) & (MAX_CAPACITY - 1);
+    return hashcodeToIndex(hash(key));
   }
 
   /**
@@ -134,9 +227,16 @@ public class MurMap {
    * @return
    */
   private int hash(byte[] bytes) {
-    return Hashing.murmur3_32().hashBytes(bytes).asInt();
+    return bytes == null ? 0 : Hashing.murmur3_32().hashBytes(bytes).asInt();
   }
 
+  /**
+   * 返回当前Map存储元素个数
+   * @return
+   */
+  public int size() {
+    return size.get();
+  }
   /**
    * 哈希表节点（内部类）
    */
@@ -146,7 +246,7 @@ public class MurMap {
     /**
      * Key
      */
-    private final byte[] key;
+    private byte[] key;
 
     /**
      * value
@@ -162,6 +262,11 @@ public class MurMap {
      * 链表下一个Entry
      */
     private Entry next;
+
+    /**
+     * 填充字段
+     */
+//    private long p1, p2, p3, p4;
 
     public Entry(byte[] key, byte[] value, int hashCode) {
       this.key = key;
