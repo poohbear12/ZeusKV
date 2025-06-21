@@ -1,16 +1,14 @@
 package com.cc.datastruct;
 
 
-import com.cc.hash.ZeusData;
-import com.cc.hash.ZeusList;
+import com.cc.database.datastructure.ZeusList;
 import com.cc.hash.ZeusSet;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @program: zeus-kv
@@ -30,11 +28,13 @@ public class DeEnUtils {
     kryo.register(ZeusSet.class);
     kryo.register(ArrayList.class);
   }
+
   /**
    * 编码方法：将对象序列化为字节数组
+   *
    * @param object 要序列化的对象
-   * @param clazz 对象的类类型
-   * @param <T> 对象的泛型类型
+   * @param clazz  对象的类类型
+   * @param <T>    对象的泛型类型
    * @return 序列化后的字节数组
    */
   public static <T> byte[] encode(T object, Class<T> clazz) {
@@ -58,9 +58,10 @@ public class DeEnUtils {
 
   /**
    * 解码方法：将字节数组反序列化为对象
+   *
    * @param bytes 要反序列化的字节数组
    * @param clazz 对象的类类型
-   * @param <T> 对象的泛型类型
+   * @param <T>   对象的泛型类型
    * @return 反序列化后的对象
    */
   public static <T> T decode(byte[] bytes, Class<T> clazz) {
@@ -82,14 +83,13 @@ public class DeEnUtils {
   }
 
 
-
   public static void main(String[] args) {
-    ZeusList<Integer> objectZeusList = new ZeusList<>();
-    byte[] encode = DeEnUtils.encode(objectZeusList, ZeusList.class);
-    ZeusList decode = DeEnUtils.decode(encode, ZeusList.class);
-    ZeusSet zeusSet = new ZeusSet();
-    byte[] encode1 = DeEnUtils.encode(zeusSet, ZeusSet.class);
-    ZeusSet decode1 = DeEnUtils.decode(encode1, ZeusSet.class);
+//    ZeusList<Integer> objectZeusList = new ZeusList<>();
+//    byte[] encode = DeEnUtils.encode(objectZeusList, ZeusList.class);
+//    ZeusList decode = DeEnUtils.decode(encode, ZeusList.class);
+//    ZeusSet zeusSet = new ZeusSet();
+//    byte[] encode1 = DeEnUtils.encode(zeusSet, ZeusSet.class);
+//    ZeusSet decode1 = DeEnUtils.decode(encode1, ZeusSet.class);
 
 
   }
