@@ -1,9 +1,7 @@
 package com.cc.hash1;
 
 import com.google.common.hash.Hashing;
-
 import java.util.Arrays;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +17,7 @@ public class MurMap {
   /**
    * 初试数组大小
    */
-  private static final int INITIAL_CAPACITY = 16384;
+  private static final int INITIAL_CAPACITY = 16;
 
   /**
    * 负载因子
@@ -33,17 +31,13 @@ public class MurMap {
   /**
    * 哈希桶
    */
-  private final Entry[] entries;
+  private Entry[] entries;
 
   /**
    * 当前数组中元素个数
    */
   private final AtomicInteger size;
 
-  /**
-   * 数组最大容量
-   */
-  private static int MAX_CAPACITY;
 
   /**
    * 存储压力 todo 后续编写计算逻辑
@@ -95,7 +89,6 @@ public class MurMap {
    */
   public MurMap(int capacity) {
     this.entries = new Entry[capacity];
-    MAX_CAPACITY = capacity;
     size = new AtomicInteger(0);
   }
 
@@ -155,6 +148,18 @@ public class MurMap {
       prev.setNext(new Entry(key, value, hashCode));
       size.getAndIncrement();
     }
+    // 判断是否需要扩容
+    if (isNeedResize()) {
+      resize();
+    }
+  }
+
+  private boolean isNeedResize() {
+    float currentLoadFactory = (size.getAcquire() / (float) entries.length);
+    if (currentLoadFactory > LOAD_FACTOR) {
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -198,7 +203,53 @@ public class MurMap {
    * 扩容方法
    */
   private void resize() {
+    // 获取当前数组长度
+    int oldCapacity = entries.length;
+    // 检查是否已达到最大容量
+    if (oldCapacity >= MAXIMUM_CAPACITY) {
+      // todo 双数组存储 后续优化
+      throw new RuntimeException("MurMap容量超出最大值！");
+    }
 
+    // 计算新容量
+    int newCapacity = oldCapacity << 1;
+    // 创建新数组
+    Entry[] newEntries = new Entry[newCapacity];
+
+    // 迁移所有元素到新数组
+    transfer(newEntries);
+
+    // 替换旧数组为新数组
+    entries = newEntries;
+  }
+
+  /**
+   * todo 后续优化
+   * 数组扩容迁移
+   * @param newEntries 新的哈希桶数组
+   */
+  private void transfer(Entry[] newEntries) {
+    int newCapacity = newEntries.length;
+    // 遍历旧数组
+    for (Entry oldEntry : entries) {
+      if (oldEntry != null) {
+        // 释放链表头节点的引用（帮助GC）
+        Entry next;
+        do {
+          next = oldEntry.next;
+
+          // 重新计算在新数组中的位置
+          int newIndex = (oldEntry.getHashCode() & 0x7FFFFFFF) & (newCapacity - 1);
+
+          // 使用头插法将节点插入新数组
+          oldEntry.setNext(newEntries[newIndex]);
+          newEntries[newIndex] = oldEntry;
+
+          // 处理下一个节点
+          oldEntry = next;
+        } while (next != null);
+      }
+    }
   }
 
 
@@ -208,7 +259,7 @@ public class MurMap {
    * @return
    */
   private int hashcodeToIndex(int hashCode) {
-    return (hashCode & 0x7FFFFFFF) & (MAX_CAPACITY - 1);
+    return (hashCode & 0x7FFFFFFF) & (entries.length - 1);
   }
 
   /**
@@ -234,9 +285,19 @@ public class MurMap {
    * 返回当前Map存储元素个数
    * @return
    */
-  public int size() {
+  public int currentSize() {
     return size.get();
   }
+
+  /**
+   * 返回Entries长度，哈希数组长度
+   * @return
+   */
+  public int size() {
+    return entries.length;
+  }
+
+
   /**
    * 哈希表节点（内部类）
    */
