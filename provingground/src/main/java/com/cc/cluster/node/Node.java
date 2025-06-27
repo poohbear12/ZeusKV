@@ -1,4 +1,9 @@
-package com.cc.cluster;
+package com.cc.cluster.node;
+
+import com.cc.cluster.message.Vote;
+import com.cc.cluster.message.Heart;
+import com.cc.cluster.message.Log;
+import com.cc.cluster.message.Msg;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -60,6 +65,9 @@ public abstract class Node {
         thread.start();
     }
 
+    /**
+     * 根据线程执行其方法
+     */
     private void startIN() {
         flag = true;
         while (flag) {
@@ -85,31 +93,13 @@ public abstract class Node {
      * 处理leader节点
      */
     private void handlerLeader() {
-        // 1. 发送心跳
-        sendHeartBeat();
-        // 2. 同步日志
-        syncLog();
-    }
-
-    private void syncLog() {
-    }
-
-    private void sendHeartBeat() {
     }
 
     /**
      * 处理candicate节点
      */
     private void handlerCandicate() {
-        initiateVoting();
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
 
-        }
-        // 统计投票结果
-        // 变更状态
-        // 同步信息
     }
 
     /**
@@ -117,6 +107,12 @@ public abstract class Node {
      */
     private void handlerFollower() {
 
+    }
+
+    /**
+     * 同步日志
+     */
+    private void syncLog() {
     }
 
     /**
@@ -136,35 +132,21 @@ public abstract class Node {
     public abstract void initiateVoting();
 
     /**
-     * 投票
-     */
-    public abstract void castVote();
-
-    /**
      * 发送消息 默认发送：all
      */
-    public abstract void emitMsg(Msg msg);
+    public abstract void emitMsgs(Msg msg, Class clazz);
 
     /**
-     * 指定ip地址发送
-     * @param addr
+     * 指定IP地址发送
+     * @param msg
+     * @param clazz
      */
-    public abstract void emitMsg(String addr, Msg msg);
+    public abstract void emitMsg(Msg msg, Class clazz);
 
     /**
-     * 处理日志
+     * 处理消息
      */
-    public abstract void handleLog(Log log);
-
-    /**
-     * 处理心跳
-     */
-    public abstract void handHeart(Heart heart);
-
-    /**
-     * 处理投票信息
-     */
-    public abstract void handVote(Vote vote);
+    public abstract void handlerMsg(Msg msg);
 
     /**
      * 设置节点类型为Leader

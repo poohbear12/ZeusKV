@@ -1,4 +1,4 @@
-package com.cc.cluster;
+package com.cc.cluster.message;
 
 /**
  * @program: ZeusKV
@@ -8,5 +8,4 @@ package com.cc.cluster;
  **/
 
 public class Vote extends Msg {
-
 }

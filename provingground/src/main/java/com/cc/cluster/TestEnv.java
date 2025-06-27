@@ -1,5 +1,8 @@
 package com.cc.cluster;
 
+import com.cc.cluster.node.Node;
+import com.cc.cluster.node.TLocalNode;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,12 +13,27 @@ import java.util.Map;
  * @description: 集群测试环境
  * @author: ccstar
  * @create: 2025-06-25  12:37
+ * @create: 2025-06-25  12:37
+ * @create: 2025-06-25  12:37
  **/
 
 
 public class TestEnv {
 
     public static final Map<String, Node> map = new HashMap<>();
+
+
+    /**
+     * 1. 我们有三个节点
+     * 2. 我们有多种类型的消息
+     * 3. 每个节点都有一个start方法
+     * 4. 我们通过线程来执行每个节点的方法
+     * 5. 节点直接互相通信并且组成集群
+     * 6. 需要编写逻辑
+     *  - 消息发送
+     *  - 消息处理
+     */
+
 
 
     /**
@@ -44,11 +62,6 @@ public class TestEnv {
         TLocalNode1.start();
         TLocalNode1.start();
         TLocalNode1.start();
+        TLocalNode1.start();
     }
-
-    static void init(){
-    }
-
-
-
 }

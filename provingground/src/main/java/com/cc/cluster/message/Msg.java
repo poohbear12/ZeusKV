@@ -1,4 +1,4 @@
-package com.cc.cluster;
+package com.cc.cluster.message;
 
 import lombok.Data;
 
@@ -17,12 +17,17 @@ public abstract class Msg {
     private int term;
 
     /**
-     * 消息内容
+     * 消息内容 Test采用String
      */
-    private String msg;
+    private String content;
+
+    /**
+     * 消息目的地址
+     */
+    private String destinationAddr;
 
     /**
      * 消息来源地址
      */
-    private String addr;
+    private String sourceAddr;
 }

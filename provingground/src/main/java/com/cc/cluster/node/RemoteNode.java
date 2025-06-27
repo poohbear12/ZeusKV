@@ -1,4 +1,4 @@
-package com.cc.cluster;
+package com.cc.cluster.node;
 
 /**
  * @program: ZeusKV
