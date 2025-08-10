@@ -304,6 +304,7 @@ public class AOFBatchWriter implements Writer {
         comBuffer.addComponent(true, batch[i].retain());
       }
       aofWriter.write(comBuffer);
+      // todo 这里应该减少pendingBytes值
     } catch (Exception e) {
       log.error("Failed to write batch to AOF file", e);
     }
